@@ -1,0 +1,14 @@
+# SHA256 (Inhalt ab Zeile 2, d.h. dieser Datei ohne diese erste Zeile): d7986b86bcebd4dc742057bca5072302c61a84489e39559de4d1a152c7d24970
+type: custom:matter-manager-card
+title: Matter-Netzwerk
+# Startet direkt mit der Netzwerkkarte (Thread, WLAN, Ethernet)
+default_tab: network
+# Nur Geräte und Netzwerk zeigen
+show_battery: false
+show_updates: false
+show_functions: false
+show_fabrics: false
+show_bindings: false
+show_bridge: false
+# Symbolfarbe der Kategorie
+color_icon_network: "#3b6642"

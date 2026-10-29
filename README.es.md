@@ -40,7 +40,7 @@ Gestiona dispositivos Matter sin salir de Home Assistant: dispositivos, batería
 
 ## Funciones
 
-La tarjeta tiene siete categorías en una barra de iconos (solo iconos por debajo de unos 480 px de ancho de tarjeta). Cada categoría se puede mostrar u ocultar por separado.
+La tarjeta tiene ocho categorías en una barra de iconos (solo iconos por debajo de unos 480 px de ancho de tarjeta). Cada categoría se puede mostrar u ocultar por separado.
 
 | Categoría | Qué hace |
 |---|---|
@@ -50,12 +50,14 @@ La tarjeta tiene siete categorías en una barra de iconos (solo iconos por debaj
 | **Funciones** | Funciones expuestas de todos los dispositivos: los **interruptores** (encendido/apagado) se pueden conmutar directamente en la tarjeta, además de valores como brillo, temperatura de color, temperatura, humedad, presión, iluminancia (lx), presencia, estado de cerradura y de persiana (solo lectura); filtro (Todos / Conmutables / Encendidos); un interruptor permanece bloqueado hasta que el dispositivo responde (sin doble clic); no se puede conmutar si hay errores o el dispositivo está sin conexión |
 | **Fabrics** | Ecosistemas (Apple Home, Google Home, Alexa, …) a los que están conectados los dispositivos; eliminar la conexión con un ecosistema ajeno |
 | **Bindings** | Resumen de todas las vinculaciones entre dispositivos; desvincular; volver a vincular en la ventana del dispositivo |
+| **Red** | Mapa de red (nuevo en 1.2.0): **Thread** (leader, routers, routers externos como los border routers, dispositivos finales con señal en dBm), **Wi-Fi** (por punto de acceso) y **Ethernet**, con zoom, arrastre y listas de conexiones; al tocar un nodo se abre la ventana del dispositivo. Se construye con los datos de diagnóstico que el Matter Server ya conoce – no se envían solicitudes adicionales a los dispositivos |
 | **Servidor** (engranaje) | **Versión de la app** (integración y tarjeta, con aviso en color si hay una versión nueva), estado del Matter Server, añadir dispositivo (código de configuración), etiqueta del fabric, reconectar, registro de eventos, Notification Center (opcional) |
 
 **Ventana del dispositivo** (pulsa una fila) con secciones tipo acordeón: Información · Comentario (editable) · Renombrar (con la lista de entidades de HA afectadas) · Firmware · Bindings · Funciones · Entidades (copiar al portapapeles para automatizaciones y scripts) · Fabrics (incl. compartir con otro ecosistema) · Diagnóstico (comprobar accesibilidad, volver a entrevistar) · Eliminar.
 
 Más puntos:
 
+- **Chips Thread y Wi-Fi (nuevo en 1.2.0):** Dos chips de estadística más muestran cuántos dispositivos funcionan por Thread o Wi-Fi y filtran la lista con un toque (el chip solo aparece si existen tales dispositivos).
 - **Equivalentes de Matter en lugar de términos de Zigbee:** la disponibilidad procede del Matter Server, la intensidad de señal es un valor RSSI en dBm (Wi-Fi o Thread), los grupos se sustituyen por fabrics y el «coordinador» es el Matter Server.
 - **Entrada propia en la barra lateral (desde 1.1.1):** Matter Manager aparece como entrada propia en la barra lateral de Home Assistant. El nombre es libre (por defecto «Matter Manager») y se cambia en el diálogo **Configurar**; con varias entradas puedes nombrar cada una por separado. También se puede ocultar.
 - **Dispositivos tras puentes** (p. ej. un puente Hue) aparecen por separado; se pueden renombrar y conmutar funciones, mientras que firmware, bindings y fabrics permanecen bloqueados.
@@ -99,11 +101,12 @@ show_battery: true
 show_updates: true
 show_fabrics: true
 show_bindings: true
+show_network: true             # categoría «Red» (mapa de red)
 show_functions: true
 show_images: true             # imágenes de dispositivos (origen: ver «Imágenes de dispositivos»)
 # image_base: /local/devices  # carpeta de imágenes propia en lugar de zigbee2mqtt.io
 show_bridge: true             # categoría «Servidor»
-default_tab: devices          # devices | battery | updates | functions | fabrics | bindings | bridge
+default_tab: devices          # devices | battery | updates | functions | fabrics | bindings | network | bridge
 max_rows: 0                   # 0 = todas, si no «mostrar más»
 zoom: 1
 show_stats: true
@@ -227,7 +230,8 @@ Los interruptores del Notification Center solo los puede cambiar un **administra
 
 ## Limitaciones conocidas
 
-- **La versión 1.1.1 solo se ha probado con datos simulados y un Matter Server simulado, no en hardware real.** Se desarrolló contra la interfaz WebSocket documentada de python-matter-server.
+- **La versión 1.2.0 solo se ha probado con datos simulados y un Matter Server simulado, no en hardware real.** Se desarrolló contra la interfaz WebSocket documentada de python-matter-server.
+- **Mapa de red:** La estructura es una **aproximación** a partir de las tablas de vecinos (Thread) o del punto de acceso (Wi-Fi), no una vista exacta de rutas, y solo se ha probado con datos simulados – **sin probar en hardware real**. Los routers aparecen en su mejor camino hacia el leader. Los routers externos (p. ej. border routers de Apple o Google) solo aparecen si figuran en una tabla de vecinos. Los dispositivos finales en reposo sin tabla de vecinos quedan en «Sin asignar». Asignar un dispositivo a su dirección Thread requiere que el Matter Server entregue la dirección de hardware de la interfaz (diagnóstico general).
 - **Entrada de la barra lateral y búsqueda:** el comportamiento del campo de búsqueda (el foco se mantiene al escribir, sin atajos de Home Assistant) se comprobó en un navegador Chromium sin interfaz, no en un móvil ni en la aplicación de Home Assistant. La entrada de la barra lateral no se ha probado en un Home Assistant real.
 - **Notification Center:** la conexión solo se probó con un bus de eventos simulado, no con un Notification Center real.
 - **Fabricante y nombre del dispositivo** proceden de los datos básicos del dispositivo (nombre del fabricante y nombre del producto). Si el nombre del producto empieza por el del fabricante, este se elimina; si falta el fabricante, solo se reconoce cuando otro dispositivo informa del mismo nombre de fabricante. Sin estos valores el dispositivo aparece como «Desconocido». La clase de dispositivo procede de los tipos de dispositivo de los endpoints; los dispositivos de tipo desconocido van a «Otros». Ambos aspectos solo se comprobaron con datos simulados.
@@ -255,6 +259,7 @@ Los interruptores del Notification Center solo los puede cambiar un **administra
 
 | Versión | Cambio |
 |---|---|
+| **1.2.0** | Corregido: **con muchos dispositivos (probado con 97) la lista saltaba al principio cada segundo**, de modo que no se podía elegir un dispositivo desplazándose hacia abajo. Causa: la tarjeta se redibujaba por completo con cada mensaje del Matter Server y devolvía a la vista, con `focus()`, un campo de selección usado antes. Ahora la tarjeta solo aplica las diferencias (como en Zigbee2MQTT Manager 1.3.1), se redibuja como máximo cada 2 segundos y conserva la posición de desplazamiento y el foco. Nuevo: categoría **Red** con mapa de red para Thread, Wi-Fi y Ethernet (zoom, arrastre, listas de conexiones, `show_network`, `color_icon_network`); chips de estadística **Thread** y **Wi-Fi** como filtros. Probado solo con datos simulados y en un navegador headless, no en hardware real |
 | **1.1.1** | Nuevo: **entrada propia en la barra lateral** con nombre libre (por defecto «Matter Manager», hasta 40 caracteres; se puede ocultar) en el diálogo Configurar; así, con varias entradas ya no aparecen dos entradas idénticas. **Español** (integración, tarjeta, README). README con banderas, capturas de pantalla y enlace a la entrada del blog. Corregido: en el campo de búsqueda de la vista de dispositivos, la tarjeta ya no sustituye el campo al escribir, así que en el móvil el teclado ya no se cierra tras cada letra y en el escritorio el campo conserva el foco; así, la letra siguiente tampoco acaba ya en los atajos de Home Assistant («e» = entidades). Solo se probó con datos simulados y en un navegador sin interfaz, no en hardware real |
 | **1.1.0** | Nuevo: **comentarios** en la ventana del dispositivo (editables, con búsqueda, solo modificables por administradores); conexión opcional con el **Notification Center** (interfaz «esquema 1» a través del bus de eventos): tipos de mensaje servidor inaccesible, dispositivo sin conexión, batería crítica/baja, actualización de firmware, dispositivo nuevo/eliminado; interruptor principal e interruptor por tipo de mensaje en la tarjeta (Servidor → Notification Center) y en el diálogo Configurar, ordenados por urgencia. Corregido: al escribir en campos de entrada de la tarjeta (p. ej. «e» en el campo de nombre) ya no se activan los atajos de Home Assistant, como la búsqueda de entidades. Cambiado: el registro de dispositivos se consulta sin `device_registry.devices`, que desaparece a partir de Home Assistant 2027.9. Solo probado con datos simulados, no con un Notification Center real ni en hardware real |
 | **1.0.3** | Nuevo: pequeñas imágenes de dispositivos (candidatas de la biblioteca de imágenes de Zigbee2MQTT, se pueden desactivar, carpeta de imágenes propia posible), categoría **Funciones** con interruptores de encendido/apagado y valores de medición, secciones Funciones y Entidades en la ventana del dispositivo con copia al portapapeles. Nuevas claves `show_functions`, `show_images`, `image_base`, `device_images`, `color_icon_functions`. Solo probado con datos simulados y en un navegador sin interfaz, no en hardware real |

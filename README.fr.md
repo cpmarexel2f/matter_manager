@@ -40,7 +40,7 @@ Gérer les appareils Matter sans quitter Home Assistant : appareils, batteries, 
 
 ## Fonctionnalités
 
-La carte comporte sept catégories dans une barre d'icônes (sous environ 480 px de largeur de carte, uniquement les icônes). Chaque catégorie peut être affichée ou masquée individuellement.
+La carte comporte huit catégories dans une barre d'icônes (sous environ 480 px de largeur de carte, uniquement les icônes). Chaque catégorie peut être affichée ou masquée individuellement.
 
 | Catégorie | Fonctions |
 |---|---|
@@ -50,12 +50,14 @@ La carte comporte sept catégories dans une barre d'icônes (sous environ 480 px
 | **Fonctions** | Fonctions expose de tous les appareils : **interrupteurs** (marche/arrêt) commutables directement dans la carte, plus des valeurs comme luminosité, température de couleur, température, humidité, pression, éclairement (lx), présence, état de serrure et de volet (lecture seule) ; filtre (Tous / Commutables / Allumés) ; un interrupteur reste verrouillé jusqu'au retour de l'appareil (pas de double clic) ; non commutable en cas d'erreur ou d'appareil hors ligne |
 | **Fabrics** | Écosystèmes (Apple Home, Google Home, Alexa, …) auxquels les appareils sont connectés ; dissocier la connexion à un écosystème tiers |
 | **Bindings** | Aperçu de toutes les liaisons d'appareils ; dissocier ; relier à nouveau dans la fenêtre de l'appareil |
+| **Réseau** | Carte du réseau (nouveau en 1.2.0) : **Thread** (leader, routeurs, routeurs externes comme les border routers, appareils terminaux avec signal en dBm), **Wi-Fi** (par point d'accès) et **Ethernet**, avec zoom, glisser et listes de connexions ; un appui sur un nœud ouvre la fenêtre de l'appareil. Construite à partir des données de diagnostic que le Matter Server connaît déjà – aucune requête supplémentaire n'est envoyée aux appareils |
 | **Serveur** (engrenage) | **Version de l'application** (intégration et carte, avec un avis coloré lors d'une nouvelle version), statut du Matter Server, ajouter un appareil (code d'installation), libellé du fabric, reconnecter, journal des événements, Notification Center (optionnel) |
 
 **Fenêtre de l'appareil** (appui sur une ligne) avec sections en accordéon : Informations · Commentaire (modifiable) · Renommer (avec la liste des entités HA concernées) · Firmware · Bindings · Fonctions · Entités (copie dans le presse-papiers pour automatisations et scripts) · Fabrics (y compris le partage avec un autre écosystème) · Diagnostic (vérifier la disponibilité, réinterroger) · Supprimer.
 
 Autres points :
 
+- **Puces Thread et Wi-Fi (nouveau en 1.2.0) :** Deux puces de statistiques de plus indiquent combien d'appareils fonctionnent en Thread ou en Wi-Fi et filtrent la liste d'un appui (une puce n'apparaît que s'il existe de tels appareils).
 - **Équivalents Matter au lieu des termes Zigbee :** la disponibilité provient du Matter Server, la force du signal est une valeur RSSI en dBm (Wi-Fi ou Thread), les groupes sont remplacés par les fabrics, le « coordinateur » est le Matter Server.
 - **Entrée propre dans la barre latérale (nouveau en 1.1.1) :** Matter Manager apparaît comme entrée à part dans la barre latérale de Home Assistant. Le nom est libre (par défaut « Matter Manager ») et se modifie dans la boîte de dialogue **Configurer** ; avec plusieurs entrées, chacune peut être nommée séparément. L'entrée peut aussi être masquée.
 - **Appareils derrière des bridges** (p. ex. un bridge Hue) apparaissent séparément ; renommer et commuter des fonctions est possible, firmware, bindings et fabrics restent verrouillés.
@@ -99,11 +101,12 @@ show_battery: true
 show_updates: true
 show_fabrics: true
 show_bindings: true
+show_network: true             # catégorie « Réseau » (carte du réseau)
 show_functions: true
 show_images: true             # images d'appareils (source : voir « Images d'appareils »)
 # image_base: /local/appareils  # dossier d'images propre au lieu de zigbee2mqtt.io
 show_bridge: true             # catégorie « Serveur »
-default_tab: devices          # devices | battery | updates | functions | fabrics | bindings | bridge
+default_tab: devices          # devices | battery | updates | functions | fabrics | bindings | network | bridge
 max_rows: 0                   # 0 = tout, sinon « afficher plus »
 zoom: 1
 show_stats: true
@@ -227,7 +230,8 @@ Les interrupteurs du Notification Center ne peuvent être modifiés par WebSocke
 
 ## Limitations connues
 
-- **La version 1.1.1 n'a été testée qu'avec des données simulées et un serveur Matter simulé, pas sur du matériel réel.** Le développement s'est fait contre l'interface WebSocket documentée de python-matter-server.
+- **La version 1.2.0 n'a été testée qu'avec des données simulées et un serveur Matter simulé, pas sur du matériel réel.** Le développement s'est fait contre l'interface WebSocket documentée de python-matter-server.
+- **Carte du réseau :** La structure est une **approximation** issue des tables de voisins (Thread) ou du point d'accès (Wi-Fi), pas un affichage exact des routes, et n'a été testée qu'avec des données simulées – **non testée sur du matériel réel**. Les routeurs apparaissent sur leur meilleur chemin vers le leader. Les routeurs externes (p. ex. border routers d'Apple ou de Google) n'apparaissent que s'ils figurent dans une table de voisins. Les appareils terminaux en veille sans table de voisins sont classés sous « Non attribués ». L'association d'un appareil à son adresse Thread suppose que le Matter Server fournisse l'adresse matérielle de l'interface (diagnostic général).
 - **Notification Center :** La liaison n'a été testée qu'avec un bus d'événements simulé, pas avec un vrai Notification Center.
 - **Barre latérale et champ de recherche :** le comportement du champ de recherche (le focus est conservé pendant la saisie, pas de raccourcis de Home Assistant) a été vérifié dans un Chromium sans interface, pas sur un téléphone ni dans l'application Home Assistant. L'entrée de la barre latérale n'a pas été testée sur un vrai Home Assistant.
 - **Fabricant et nom de l'appareil** proviennent des données de base de l'appareil (nom du fabricant et nom du produit). Si le nom du produit commence par le nom du fabricant, celui-ci est retiré ; si le fabricant manque, il n'est reconnu que si un autre appareil indique le même nom de fabricant. Sans ces valeurs, l'appareil apparaît sous « Inconnu ». La classe d'appareil provient des types d'appareil des points de terminaison ; les appareils de type inconnu vont dans « Autres ». Les deux n'ont été vérifiés qu'avec des données simulées.
@@ -255,6 +259,7 @@ Les interrupteurs du Notification Center ne peuvent être modifiés par WebSocke
 
 | Version | Modification |
 |---|---|
+| **1.2.0** | Corrigé : **avec de nombreux appareils (testé avec 97), la liste remontait en haut chaque seconde**, ce qui empêchait de choisir un appareil en faisant défiler vers le bas. Cause : la carte se redessinait entièrement à chaque message du Matter Server et ramenait dans la vue, via `focus()`, un champ de sélection utilisé auparavant. La carte n'applique désormais que les différences (comme dans Zigbee2MQTT Manager 1.3.1), se redessine au plus toutes les 2 secondes et conserve la position de défilement et le focus. Nouveau : catégorie **Réseau** avec carte du réseau pour Thread, Wi-Fi et Ethernet (zoom, glisser, listes de connexions, `show_network`, `color_icon_network`) ; puces de statistiques **Thread** et **Wi-Fi** comme filtres. Testé uniquement avec des données simulées et dans un navigateur headless, pas sur du matériel réel |
 | **1.1.1** | Nouveau : **entrée propre dans la barre latérale** avec un nom libre (par défaut « Matter Manager », 40 caractères maximum, désactivable) dans la boîte de dialogue Configurer ; avec plusieurs entrées, on n'obtient plus deux entrées identiques. **Espagnol** (intégration, carte, README). README avec drapeaux, captures d'écran et lien vers l'article de blog. Corrigé : dans le champ de recherche de la vue des appareils, la carte ne remplace plus le champ pendant la saisie – sur téléphone, le clavier ne se ferme plus après chaque lettre, sur ordinateur le champ garde le focus ; la lettre suivante n'atteint ainsi plus les raccourcis de Home Assistant (« e » = entités). Testé uniquement avec des données simulées et dans un navigateur sans interface, pas sur du matériel réel |
 | **1.1.0** | Nouveau : **commentaires** dans la fenêtre de l'appareil (modifiables, interrogeables, modifiables uniquement par les administrateurs) ; liaison optionnelle avec le **Notification Center** (interface « schéma 1 » via le bus d'événements) : types de messages serveur injoignable, appareil hors ligne, batterie critique/faible, mise à jour du firmware, appareil nouveau/supprimé ; interrupteur principal et interrupteur par type de message dans la carte (Serveur → Notification Center) et dans la boîte de dialogue Configurer, triés par urgence. Corrigé : la saisie dans les champs de la carte (p. ex. « e » dans le champ du nom) ne déclenche plus les raccourcis clavier de Home Assistant comme la recherche d'entités. Modifié : le registre des appareils est interrogé sans `device_registry.devices`, supprimé à partir de Home Assistant 2027.9. Testé uniquement avec des données simulées, pas avec un vrai Notification Center ni sur du matériel réel |
 | **1.0.3** | Nouveau : petites images d'appareils (candidats de la bibliothèque d'images Zigbee2MQTT, désactivables, dossier d'images propre possible), catégorie **Fonctions** avec interrupteurs marche/arrêt commutables et valeurs mesurées, sections Fonctions et Entités dans la fenêtre de l'appareil avec copie dans le presse-papiers. Nouvelles clés `show_functions`, `show_images`, `image_base`, `device_images`, `color_icon_functions`. Testé uniquement avec des données simulées et dans un navigateur headless, pas sur du matériel réel |
@@ -271,7 +276,7 @@ Les fichiers JSON n'ont pas de commentaires. Leurs hachages SHA-256 (sur le fich
 | Fichier | SHA-256 |
 |---|---|
 | `hacs.json` | `e719b176c5b44ea120e0d895d0719225612e43ab3ca6f462f98793383909ff5a` |
-| `custom_components/matter_manager/manifest.json` | `f5a446c4adb95153a2517d1cee8ca2da878d28a739c4ab723a82c07dc7ca878c` |
+| `custom_components/matter_manager/manifest.json` | `0fa4cc0d36ead960b4b9516a018926e2891cdcefa3035d8f9dd79a397dbf4fd2` |
 | `custom_components/matter_manager/strings.json` | `5b1273162c6c691c41cbbba724f52785b32601475f876836abcf3363e3eabb1c` |
 | `custom_components/matter_manager/icons.json` | `6737652d58ff71ed9df9eecfde362f6a0f62d7b2b7243d985e1f06020e3c9eb5` |
 | `custom_components/matter_manager/translations/de.json` | `5b1273162c6c691c41cbbba724f52785b32601475f876836abcf3363e3eabb1c` |

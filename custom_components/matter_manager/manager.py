@@ -1,4 +1,4 @@
-# SHA256 (Inhalt ab Zeile 2, d.h. dieser Datei ohne diese erste Zeile): 8a40cd3bb4f76b07e671c323f6c49bb7713ddd1a5afeec53d7c9c8a386687cff
+# SHA256 (Inhalt ab Zeile 2, d.h. dieser Datei ohne diese erste Zeile): 2b1d9b436a19c841757db271a1512c47143d2524d698cc1ae9d9bc65b5aff663
 """Hält den Zustand des Matter Servers und sendet Befehle an Geräte."""
 
 from __future__ import annotations
@@ -51,6 +51,7 @@ from .const import (
     VERSION,
 )
 from .matter_client import MatterServerClient, MatterServerError
+from .network_map import build_topology
 from .nc_catalog import NC_CATALOG, NC_ICON, NC_TYPE_KEYS
 from .notification_bridge import OPT_ENABLED, OPT_TYPES, NotificationBridge
 from .update_check import async_fetch_latest, is_newer, is_prerelease
@@ -1421,6 +1422,12 @@ class MatterManager:
         available = [d for d in devices if d["ota"]["state"] == "available"]
         updating = [d for d in devices if d["ota"]["state"] == "updating"]
         fabrics = self._build_fabrics()
+        try:
+            network = build_topology(self._nodes, names)
+        except Exception:  # noqa: BLE001 - die Netzwerkkarte darf den Aufbau nie verhindern
+            _LOGGER.exception("Netzwerkkarte konnte nicht berechnet werden")
+            network = {"thread": None, "wifi": None, "ethernet": None}
+        native = [d for d in devices if not d["bridged"]]
 
         info = self.server_info
         schema = _int(info.get("schema_version"))
@@ -1455,6 +1462,9 @@ class MatterManager:
                 "updates_available": len(available),
                 "updating": len(updating),
                 "fabrics": len(fabrics),
+                "thread": sum(1 for d in native if d["network"] == "thread"),
+                "wifi": sum(1 for d in native if d["network"] == "wifi"),
+                "ethernet": sum(1 for d in native if d["network"] == "ethernet"),
                 "low_battery_threshold": low_t,
                 "critical_battery_threshold": crit_t,
             },
@@ -1463,6 +1473,7 @@ class MatterManager:
             "nc": {**self.nc.snapshot(), "chosen": self._nc_current_options()[OPT_TYPES]},
             "events": list(self._events),
             "fabrics": fabrics,
+            "network": network,
             "devices": devices,
         }
 

@@ -1,4 +1,4 @@
-// SHA256 (Inhalt ab Zeile 2, d.h. dieser Datei ohne diese erste Zeile): 1d684518a54bd8115e29b64a4b24c74e5b321551e302647218239ae771068ada
+// SHA256 (Inhalt ab Zeile 2, d.h. dieser Datei ohne diese erste Zeile): fe86667bd710cba8940b9ad25251ca0850075db6ed03ae499df8b93c41fd919c
 /**
  * matter-manager-card
  * -------------------
@@ -18,6 +18,8 @@
  *   Fabrics     - Ökosysteme (Apple Home, Google Home, Alexa …), mit denen die
  *                 Geräte verbunden sind (Multi-Admin); Verbindung entfernen
  *   Bindings    - Übersicht, Anlegen und Lösen von Gerät-zu-Gerät-Verknüpfungen
+ *   Netzwerk    - Netzwerkkarte (seit 1.2.0): Thread (Leader, Router, Endgeräte), WLAN (nach
+ *                 Access Point) und Ethernet mit Zoom, Ziehen und Verbindungslisten
  *   Server      - Matter Server: Status, App-Version (mit Update-Hinweis),
  *                 Gerät hinzufügen, Optionen, Neu verbinden, Ereignisprotokoll
  *
@@ -40,12 +42,12 @@
  * Kartentyp: custom:matter-manager-card
  */
 
-const CARD_VERSION = "1.1.1";
+const CARD_VERSION = "1.2.0";
 // Höchstlänge eines Kommentars (muss zu COMMENT_MAX_LENGTH in const.py passen)
 const COMMENT_MAX = 1000;
 const RELEASES_URL = "https://github.com/Meine-smarte-Welt/matter_manager/releases";
 
-const TAB_ORDER = ["devices", "battery", "updates", "functions", "fabrics", "bindings", "bridge"];
+const TAB_ORDER = ["devices", "battery", "updates", "functions", "fabrics", "bindings", "network", "bridge"];
 
 const TAB_META = {
   devices: { icon: "mdi:matter", label: "tab_devices" },
@@ -54,6 +56,7 @@ const TAB_META = {
   functions: { icon: "mdi:toggle-switch-outline", label: "tab_functions" },
   fabrics: { icon: "mdi:home-group", label: "tab_fabrics" },
   bindings: { icon: "mdi:link-variant", label: "tab_bindings" },
+  network: { icon: "mdi:graph-outline", label: "tab_network" },
   bridge: { icon: "mdi:cog", label: "tab_bridge" },
 };
 
@@ -219,6 +222,7 @@ const CONFIG_DEFAULTS = {
   show_functions: true,
   show_fabrics: true,
   show_bindings: true,
+  show_network: true,
   show_bridge: true,
   default_tab: "devices",
   // Darstellung
@@ -258,6 +262,7 @@ const CONFIG_DEFAULTS = {
   color_icon_functions: "",
   color_icon_fabrics: "",
   color_icon_bindings: "",
+  color_icon_network: "",
   color_icon_bridge: "",
 };
 
@@ -367,6 +372,8 @@ const I18N = {
     type_Router: "Thread-Router", type_Leader: "Thread-Leader", type_EndDevice: "Thread-Endgerät", type_SleepyEndDevice: "Thread-Endgerät (schlafend)",
     type_Thread: "Thread", type_WiFi: "WLAN", type_Ethernet: "Ethernet", type_Bridge: "Bridge", type_Bridged: "Gerät hinter Bridge",
     net_thread: "Thread", net_wifi: "WLAN", net_ethernet: "Ethernet",
+    // Netzwerkkarte (seit 1.2.0)
+    tab_network: "Netzwerk", chip_thread: "Thread", chip_wifi: "WLAN", nw_title_thread: "Thread-Netz", nw_title_wifi: "WLAN", nw_title_ethernet: "Ethernet", nw_none: "Noch keine Netzwerkdaten. Sobald der Matter Server Thread-, WLAN- oder Ethernet-Geräte meldet, erscheint hier die Karte.", nw_intro: "Aufbau der Netze aus den Diagnose-Daten, die der Matter Server von den Geräten kennt: bei Thread aus den Nachbartabellen der Router, bei WLAN nach Access Point. Jeder Router hängt an seiner besten Verbindung zum Leader (stark, wenige Sprünge) – eine Näherung der echten Routen, keine exakte Routenanzeige.", nw_ext_hint: "Externe Router gehören nicht zu deinen Matter-Geräten (z. B. ein Border Router von Apple oder Google). Sie erscheinen nur, wenn sie in einer Nachbartabelle stehen.", nw_summary_thread: "Router: {routers} (extern: {external}) · Endgeräte: {clients}", nw_summary_wifi: "Access Points: {routers} · Geräte: {clients}", nw_summary_ethernet: "Geräte am Kabel: {clients}", nw_leader: "Leader", nw_router: "Router", nw_external: "Externer Router {id}", nw_ap: "Access Point", nw_ap_named: "Access Point {id}", nw_ap_unknown: "Access Point (unbekannt)", nw_lan: "LAN", nw_channel: "Kanal {n}", nw_cloud_one: "1 Gerät", nw_cloud: "{n} Geräte", nw_open_tip: "{name} öffnen", nw_show_tip: "Geräte von {name} anzeigen", nw_links_routers: "Verbindungen zu Routern", nw_end_devices: "Geräte", nw_rel_parent: "Richtung Leader", nw_rel_child: "darunter", nw_rel_neighbor: "Nachbar", nw_orphan: "Keine Verbindung zum übrigen Netz bekannt.", nw_unassigned: "Nicht zugeordnet", nw_unassigned_hint: "Für diese Geräte kennt der Matter Server keinen Thread-Nachbarn (z. B. schlafende Geräte ohne Nachbartabelle).", nw_no_links: "Keine Verbindungen bekannt", nw_signal: "Signal", nw_map_label: "Netzwerkkarte", nw_zoom_label: "Zoom der Netzwerkkarte", nw_zoom_out: "Verkleinern", nw_zoom_in: "Vergrößern", nw_zoom_fit: "Einpassen", nw_zoom_reset: "Auf 100 % zurücksetzen", nw_zoom_hint: "Zoom: Regler oder Knöpfe; am Smartphone mit zwei Fingern auseinanderziehen bzw. zusammenschieben, am Desktop Strg + Mausrad. Mit gedrückter Maustaste verschiebst du die Karte in alle Richtungen.", nw_role_sleepy: "Schlafendes Endgerät", nw_role_end: "Endgerät", nw_role_reed: "Router-fähiges Endgerät", nw_role_wifi: "WLAN-Gerät", nw_role_lan: "Ethernet-Gerät",
     battery_ok: "OK", battery_warning: "Warnung", battery_critical: "Kritisch", battery_replace: "Tausch nötig",
     // Gruppieren und Filtern (seit 1.0.2)
     group_by: "Gruppieren", group_none: "Keine Gruppierung", group_vendor: "Hersteller", group_model: "Gerätename", group_class: "Geräteklasse", group_unknown: "Unbekannt",
@@ -484,6 +491,8 @@ const I18N = {
     type_Router: "Thread router", type_Leader: "Thread leader", type_EndDevice: "Thread end device", type_SleepyEndDevice: "Thread end device (sleepy)",
     type_Thread: "Thread", type_WiFi: "Wi-Fi", type_Ethernet: "Ethernet", type_Bridge: "Bridge", type_Bridged: "Device behind bridge",
     net_thread: "Thread", net_wifi: "Wi-Fi", net_ethernet: "Ethernet",
+    // Netzwerkkarte (seit 1.2.0)
+    tab_network: "Network", chip_thread: "Thread", chip_wifi: "Wi-Fi", nw_title_thread: "Thread network", nw_title_wifi: "Wi-Fi", nw_title_ethernet: "Ethernet", nw_none: "No network data yet. As soon as the Matter server reports Thread, Wi-Fi or Ethernet devices, the map appears here.", nw_intro: "Structure of the networks, built from the diagnostic data the Matter server knows about the devices: for Thread from the routers' neighbour tables, for Wi-Fi by access point. Each router hangs off its best path to the leader (strong link, few hops) – an approximation of the real routes, not an exact route display.", nw_ext_hint: "External routers are not among your Matter devices (e.g. a border router from Apple or Google). They only appear if they show up in a neighbour table.", nw_summary_thread: "Routers: {routers} (external: {external}) · End devices: {clients}", nw_summary_wifi: "Access points: {routers} · Devices: {clients}", nw_summary_ethernet: "Devices on the cable: {clients}", nw_leader: "Leader", nw_router: "Router", nw_external: "External router {id}", nw_ap: "Access point", nw_ap_named: "Access point {id}", nw_ap_unknown: "Access point (unknown)", nw_lan: "LAN", nw_channel: "Channel {n}", nw_cloud_one: "1 device", nw_cloud: "{n} devices", nw_open_tip: "Open {name}", nw_show_tip: "Show devices of {name}", nw_links_routers: "Links to routers", nw_end_devices: "Devices", nw_rel_parent: "towards leader", nw_rel_child: "below", nw_rel_neighbor: "neighbour", nw_orphan: "No connection to the rest of the network known.", nw_unassigned: "Not assigned", nw_unassigned_hint: "The Matter server knows no Thread neighbour for these devices (e.g. sleepy devices without a neighbour table).", nw_no_links: "No links known", nw_signal: "Signal", nw_map_label: "Network map", nw_zoom_label: "Network map zoom", nw_zoom_out: "Zoom out", nw_zoom_in: "Zoom in", nw_zoom_fit: "Fit", nw_zoom_reset: "Reset to 100 %", nw_zoom_hint: "Zoom: slider or buttons; on a phone pinch with two fingers, on desktop Ctrl + mouse wheel. Hold the mouse button and drag to move the map in any direction.", nw_role_sleepy: "Sleepy end device", nw_role_end: "End device", nw_role_reed: "Router-eligible end device", nw_role_wifi: "Wi-Fi device", nw_role_lan: "Ethernet device",
     battery_ok: "OK", battery_warning: "Warning", battery_critical: "Critical", battery_replace: "Replace",
     // Grouping and filtering (since 1.0.2)
     group_by: "Group by", group_none: "No grouping", group_vendor: "Manufacturer", group_model: "Device name", group_class: "Device class", group_unknown: "Unknown",
@@ -601,6 +610,8 @@ const I18N = {
     type_Router: "Thread-router", type_Leader: "Thread-leader", type_EndDevice: "Thread-eindapparaat", type_SleepyEndDevice: "Thread-eindapparaat (slapend)",
     type_Thread: "Thread", type_WiFi: "Wifi", type_Ethernet: "Ethernet", type_Bridge: "Bridge", type_Bridged: "Apparaat achter bridge",
     net_thread: "Thread", net_wifi: "Wifi", net_ethernet: "Ethernet",
+    // Netzwerkkarte (seit 1.2.0)
+    tab_network: "Netwerk", chip_thread: "Thread", chip_wifi: "Wifi", nw_title_thread: "Thread-netwerk", nw_title_wifi: "Wifi", nw_title_ethernet: "Ethernet", nw_none: "Nog geen netwerkgegevens. Zodra de Matter Server Thread-, wifi- of Ethernet-apparaten meldt, verschijnt hier de kaart.", nw_intro: "Opbouw van de netwerken uit de diagnosegegevens die de Matter Server van de apparaten kent: bij Thread uit de buurtabellen van de routers, bij wifi per access point. Elke router hangt aan zijn beste verbinding met de leader (sterk, weinig hops) – een benadering van de echte routes, geen exacte routeweergave.", nw_ext_hint: "Externe routers horen niet bij je Matter-apparaten (bijv. een border router van Apple of Google). Ze verschijnen alleen als ze in een buurtabel staan.", nw_summary_thread: "Routers: {routers} (extern: {external}) · Eindapparaten: {clients}", nw_summary_wifi: "Access points: {routers} · Apparaten: {clients}", nw_summary_ethernet: "Apparaten aan de kabel: {clients}", nw_leader: "Leader", nw_router: "Router", nw_external: "Externe router {id}", nw_ap: "Access point", nw_ap_named: "Access point {id}", nw_ap_unknown: "Access point (onbekend)", nw_lan: "LAN", nw_channel: "Kanaal {n}", nw_cloud_one: "1 apparaat", nw_cloud: "{n} apparaten", nw_open_tip: "{name} openen", nw_show_tip: "Apparaten van {name} tonen", nw_links_routers: "Verbindingen met routers", nw_end_devices: "Apparaten", nw_rel_parent: "richting leader", nw_rel_child: "eronder", nw_rel_neighbor: "buur", nw_orphan: "Geen verbinding met de rest van het netwerk bekend.", nw_unassigned: "Niet toegewezen", nw_unassigned_hint: "Voor deze apparaten kent de Matter Server geen Thread-buur (bijv. slapende apparaten zonder buurtabel).", nw_no_links: "Geen verbindingen bekend", nw_signal: "Signaal", nw_map_label: "Netwerkkaart", nw_zoom_label: "Zoom van de netwerkkaart", nw_zoom_out: "Verkleinen", nw_zoom_in: "Vergroten", nw_zoom_fit: "Passend maken", nw_zoom_reset: "Terug naar 100 %", nw_zoom_hint: "Zoom: schuifregelaar of knoppen; op een smartphone met twee vingers knijpen, op de desktop Ctrl + muiswiel. Met ingedrukte muisknop verschuif je de kaart in alle richtingen.", nw_role_sleepy: "Slapend eindapparaat", nw_role_end: "Eindapparaat", nw_role_reed: "Router-geschikt eindapparaat", nw_role_wifi: "Wifi-apparaat", nw_role_lan: "Ethernet-apparaat",
     battery_ok: "OK", battery_warning: "Waarschuwing", battery_critical: "Kritiek", battery_replace: "Vervangen",
     // Groeperen en filteren (sinds 1.0.2)
     group_by: "Groeperen", group_none: "Geen groepering", group_vendor: "Fabrikant", group_model: "Apparaatnaam", group_class: "Apparaatklasse", group_unknown: "Onbekend",
@@ -718,6 +729,8 @@ const I18N = {
     type_Router: "Routeur Thread", type_Leader: "Leader Thread", type_EndDevice: "Terminal Thread", type_SleepyEndDevice: "Terminal Thread (en veille)",
     type_Thread: "Thread", type_WiFi: "Wi-Fi", type_Ethernet: "Ethernet", type_Bridge: "Bridge", type_Bridged: "Appareil derrière un bridge",
     net_thread: "Thread", net_wifi: "Wi-Fi", net_ethernet: "Ethernet",
+    // Netzwerkkarte (seit 1.2.0)
+    tab_network: "Réseau", chip_thread: "Thread", chip_wifi: "Wi-Fi", nw_title_thread: "Réseau Thread", nw_title_wifi: "Wi-Fi", nw_title_ethernet: "Ethernet", nw_none: "Pas encore de données réseau. Dès que le Matter Server signale des appareils Thread, Wi-Fi ou Ethernet, la carte apparaît ici.", nw_intro: "Structure des réseaux, construite à partir des données de diagnostic que le Matter Server connaît : pour Thread d'après les tables de voisins des routeurs, pour le Wi-Fi par point d'accès. Chaque routeur est rattaché à son meilleur chemin vers le leader (lien fort, peu de sauts) – une approximation des vraies routes, pas un affichage exact des routes.", nw_ext_hint: "Les routeurs externes ne font pas partie de tes appareils Matter (p. ex. un border router d'Apple ou de Google). Ils n'apparaissent que s'ils figurent dans une table de voisins.", nw_summary_thread: "Routeurs : {routers} (externes : {external}) · Appareils terminaux : {clients}", nw_summary_wifi: "Points d'accès : {routers} · Appareils : {clients}", nw_summary_ethernet: "Appareils sur le câble : {clients}", nw_leader: "Leader", nw_router: "Routeur", nw_external: "Routeur externe {id}", nw_ap: "Point d'accès", nw_ap_named: "Point d'accès {id}", nw_ap_unknown: "Point d'accès (inconnu)", nw_lan: "LAN", nw_channel: "Canal {n}", nw_cloud_one: "1 appareil", nw_cloud: "{n} appareils", nw_open_tip: "Ouvrir {name}", nw_show_tip: "Afficher les appareils de {name}", nw_links_routers: "Liens vers les routeurs", nw_end_devices: "Appareils", nw_rel_parent: "vers le leader", nw_rel_child: "en dessous", nw_rel_neighbor: "voisin", nw_orphan: "Aucune connexion avec le reste du réseau connue.", nw_unassigned: "Non attribués", nw_unassigned_hint: "Pour ces appareils, le Matter Server ne connaît aucun voisin Thread (p. ex. appareils en veille sans table de voisins).", nw_no_links: "Aucun lien connu", nw_signal: "Signal", nw_map_label: "Carte du réseau", nw_zoom_label: "Zoom de la carte du réseau", nw_zoom_out: "Dézoomer", nw_zoom_in: "Zoomer", nw_zoom_fit: "Ajuster", nw_zoom_reset: "Revenir à 100 %", nw_zoom_hint: "Zoom : curseur ou boutons ; sur smartphone pincer avec deux doigts, sur ordinateur Ctrl + molette. Maintiens le bouton de la souris enfoncé pour déplacer la carte dans toutes les directions.", nw_role_sleepy: "Appareil terminal en veille", nw_role_end: "Appareil terminal", nw_role_reed: "Appareil terminal apte routeur", nw_role_wifi: "Appareil Wi-Fi", nw_role_lan: "Appareil Ethernet",
     battery_ok: "OK", battery_warning: "Avertissement", battery_critical: "Critique", battery_replace: "Remplacement nécessaire",
     // Regroupement et filtres (depuis 1.0.2)
     group_by: "Regrouper", group_none: "Aucun regroupement", group_vendor: "Fabricant", group_model: "Nom de l'appareil", group_class: "Classe d'appareil", group_unknown: "Inconnu",
@@ -835,6 +848,8 @@ const I18N = {
     type_Router: "Router Thread", type_Leader: "Líder Thread", type_EndDevice: "Dispositivo final Thread", type_SleepyEndDevice: "Dispositivo final Thread (en reposo)",
     type_Thread: "Thread", type_WiFi: "Wi-Fi", type_Ethernet: "Ethernet", type_Bridge: "Puente", type_Bridged: "Dispositivo tras un puente",
     net_thread: "Thread", net_wifi: "Wi-Fi", net_ethernet: "Ethernet",
+    // Netzwerkkarte (seit 1.2.0)
+    tab_network: "Red", chip_thread: "Thread", chip_wifi: "Wi-Fi", nw_title_thread: "Red Thread", nw_title_wifi: "Wi-Fi", nw_title_ethernet: "Ethernet", nw_none: "Aún no hay datos de red. En cuanto el Matter Server informe de dispositivos Thread, Wi-Fi o Ethernet, aparecerá aquí el mapa.", nw_intro: "Estructura de las redes, creada a partir de los datos de diagnóstico que el Matter Server conoce de los dispositivos: en Thread, de las tablas de vecinos de los routers; en Wi-Fi, por punto de acceso. Cada router cuelga de su mejor camino hacia el leader (enlace fuerte, pocos saltos): una aproximación de las rutas reales, no una vista exacta de rutas.", nw_ext_hint: "Los routers externos no forman parte de tus dispositivos Matter (p. ej. un border router de Apple o Google). Solo aparecen si figuran en una tabla de vecinos.", nw_summary_thread: "Routers: {routers} (externos: {external}) · Dispositivos finales: {clients}", nw_summary_wifi: "Puntos de acceso: {routers} · Dispositivos: {clients}", nw_summary_ethernet: "Dispositivos por cable: {clients}", nw_leader: "Leader", nw_router: "Router", nw_external: "Router externo {id}", nw_ap: "Punto de acceso", nw_ap_named: "Punto de acceso {id}", nw_ap_unknown: "Punto de acceso (desconocido)", nw_lan: "LAN", nw_channel: "Canal {n}", nw_cloud_one: "1 dispositivo", nw_cloud: "{n} dispositivos", nw_open_tip: "Abrir {name}", nw_show_tip: "Mostrar dispositivos de {name}", nw_links_routers: "Enlaces con routers", nw_end_devices: "Dispositivos", nw_rel_parent: "hacia el leader", nw_rel_child: "debajo", nw_rel_neighbor: "vecino", nw_orphan: "No se conoce conexión con el resto de la red.", nw_unassigned: "Sin asignar", nw_unassigned_hint: "Para estos dispositivos el Matter Server no conoce ningún vecino Thread (p. ej. dispositivos en reposo sin tabla de vecinos).", nw_no_links: "Sin enlaces conocidos", nw_signal: "Señal", nw_map_label: "Mapa de red", nw_zoom_label: "Zoom del mapa de red", nw_zoom_out: "Alejar", nw_zoom_in: "Acercar", nw_zoom_fit: "Ajustar", nw_zoom_reset: "Restablecer al 100 %", nw_zoom_hint: "Zoom: control deslizante o botones; en el móvil, pellizca con dos dedos; en el ordenador, Ctrl + rueda del ratón. Mantén pulsado el botón del ratón y arrastra para mover el mapa en cualquier dirección.", nw_role_sleepy: "Dispositivo final en reposo", nw_role_end: "Dispositivo final", nw_role_reed: "Dispositivo final apto para router", nw_role_wifi: "Dispositivo Wi-Fi", nw_role_lan: "Dispositivo Ethernet",
     battery_ok: "OK", battery_warning: "Aviso", battery_critical: "Crítica", battery_replace: "Sustituir",
     // Agrupar y filtrar (desde 1.0.2)
     group_by: "Agrupar por", group_none: "Sin agrupar", group_vendor: "Fabricante", group_model: "Nombre del dispositivo", group_class: "Clase de dispositivo", group_unknown: "Desconocido",
@@ -1055,6 +1070,43 @@ const BASE_CARD_STYLES = `
   .timeline-item:last-child { border-bottom: none; }
   .timeline-item .when { margin-left: auto; color: var(--secondary-text-color, #727272); font-size: 0.85em; white-space: nowrap; }
 
+  /* Netzwerkkarte (seit 1.2.0): Zeichnung (SVG) und Verbindungslisten */
+  .nm-wrap { overflow-x: auto; padding: 0 2px; margin: 4px 0; touch-action: pan-x pan-y; }
+  @media (hover: hover) and (pointer: fine) {
+    .nm-wrap { overflow: auto; max-height: min(78vh, 760px); cursor: grab; user-select: none; -webkit-user-select: none; }
+    .nm-wrap.nm-dragging, .nm-wrap.nm-dragging * { cursor: grabbing !important; }
+  }
+  .nm-zoom { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 4px 0 2px; }
+  .nm-zoom input[type=range] { flex: 1 1 120px; min-width: 90px; max-width: 320px; accent-color: var(--mmm-color-tab-active); }
+  .nm-zoomval { min-width: 3.2em; text-align: center; font-variant-numeric: tabular-nums; }
+  .nm-zoomhint { margin: 0 0 6px; }
+  .nm-svg { height: auto; display: block; margin: 0; max-width: none; }
+  .nm-node rect { fill: var(--card-background-color, #fff); stroke: var(--mmm-color-tab-active); stroke-width: 1.5; }
+  .nm-node.coord rect { stroke-width: 2.5; }
+  .nm-node.cl rect { stroke: var(--divider-color, #999); stroke-dasharray: 4 3; }
+  .nm-node.off rect { stroke: var(--mmm-color-error); }
+  .nm-node.link { cursor: pointer; }
+  .nm-node.link:hover rect, .nm-node.link:focus-visible rect { stroke-width: 3; }
+  .nm-node.link:focus-visible { outline: none; }
+  .nm-node ha-icon { --mdc-icon-size: 24px; width: 24px; height: 24px; color: var(--mmm-color-tab-active); }
+  .nm-node.cl ha-icon { --mdc-icon-size: 18px; width: 18px; height: 18px; color: var(--secondary-text-color, #727272); }
+  .nm-node.off ha-icon { color: var(--mmm-color-error); }
+  .nm-t { font-size: 13px; font-weight: 600; fill: var(--primary-text-color, #222); }
+  .nm-s { font-size: 11px; fill: var(--secondary-text-color, #727272); }
+  .nm-lbl { font-size: 10px; fill: var(--secondary-text-color, #727272); }
+  .nm-edge { fill: none; stroke: var(--mmm-color-tab-active); stroke-width: 2; }
+  .nm-edge.nm-dash { stroke: var(--divider-color, #999); stroke-dasharray: 4 3; stroke-width: 1.5; }
+  .nm-edge.nm-orphan { stroke: var(--mmm-color-warning); stroke-dasharray: 6 4; }
+  .nm-sub { font-weight: 600; font-size: 0.9em; margin: 8px 0 2px; }
+  .nm-row { display: flex; align-items: center; gap: 8px; padding: 6px 2px; border-bottom: 1px solid var(--divider-color, #e0e0e0); cursor: pointer; }
+  .nm-row.plain { cursor: default; }
+  .nm-row:last-child { border-bottom: none; }
+  .nm-row .nm-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nm-row .nm-dot { position: relative; width: 14px; height: 14px; flex: none; }
+  .nm-row .nm-dot .dot { position: static; }
+  .nm-row ha-icon { --mdc-icon-size: 18px; color: var(--secondary-text-color, #727272); }
+  .nm-rel { white-space: nowrap; }
+
   /* Detail-Popup */
   .popup-backdrop {
     position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
@@ -1151,6 +1203,118 @@ function clamp(n, lo, hi) {
   return Math.max(lo, Math.min(hi, n));
 }
 
+// ------------------------------------------------------------------ DOM-Abgleich (seit 1.2.0)
+// Die Karte setzt ihr HTML nicht mehr komplett neu, sondern arbeitet nur die Unterschiede
+// ein. So bleiben Scroll-Position, Fokus, geöffnete Auswahllisten und Gerätebilder bei jeder
+// Meldung des Matter Servers erhalten (vorher sprang die Liste bei vielen Geräten nach oben).
+
+// Eingabefelder, in die gerade getippt werden kann (Home-Assistant-Kurzbefehle dürfen dort nicht auslösen)
+function isTypingTarget(el) {
+  if (!el || el.nodeType !== 1) return false;
+  const tag = el.tagName;
+  if (tag === "TEXTAREA" || tag === "SELECT") return true;
+  if (el.isContentEditable) return true;
+  if (tag === "INPUT") {
+    const type = (el.getAttribute("type") || "text").toLowerCase();
+    return !["checkbox", "radio", "button", "submit", "reset", "range", "color", "image", "file"].includes(type);
+  }
+  return false;
+}
+
+// Schlüssel für Elemente, die beim Abgleich ihren Platz wechseln dürfen (Zeilen, Akkordeons)
+function morphKey(node) {
+  if (node.nodeType !== 1) return null;
+  const d = node.dataset;
+  if (!d) return null;
+  if (node.tagName === "DETAILS" && d.k) return `d:${d.k}`;
+  if (d.act === "open" && d.id && node.classList.contains("row")) return `r:${d.id}`;
+  return null;
+}
+
+function morphAttrs(oldEl, newEl) {
+  for (const a of Array.from(oldEl.attributes)) {
+    if (!newEl.hasAttribute(a.name)) oldEl.removeAttribute(a.name);
+  }
+  for (const a of Array.from(newEl.attributes)) {
+    if (oldEl.getAttribute(a.name) !== a.value) oldEl.setAttribute(a.name, a.value);
+  }
+}
+
+function morphNode(oldN, newN, active) {
+  if (oldN.nodeType !== 1) {
+    if (oldN.nodeValue !== newN.nodeValue) oldN.nodeValue = newN.nodeValue;
+    return;
+  }
+  morphAttrs(oldN, newN);
+  const tag = oldN.tagName;
+  if (tag === "TEXTAREA") {
+    if (oldN !== active && oldN.value !== newN.value) oldN.value = newN.value;
+    return;
+  }
+  morphChildren(oldN, newN, active);
+  if (tag === "INPUT") {
+    if (oldN !== active) {
+      if (oldN.type === "checkbox" || oldN.type === "radio") {
+        if (oldN.checked !== newN.checked) oldN.checked = newN.checked;
+      } else if (oldN.value !== newN.value) {
+        oldN.value = newN.value;
+      }
+    }
+  } else if (tag === "SELECT" && oldN !== active) {
+    if (oldN.value !== newN.value) oldN.value = newN.value;
+  }
+}
+
+function morphChildren(oldP, newP, active) {
+  const keyed = new Map();
+  for (const k of Array.from(oldP.childNodes)) {
+    const key = morphKey(k);
+    if (key) keyed.set(key, keyed.has(key) ? null : k);
+  }
+  const kept = new Set();
+  let ref = oldP.firstChild;
+  for (const w of Array.from(newP.childNodes)) {
+    const key = morphKey(w);
+    let o = null;
+    if (key) {
+      o = keyed.get(key) || null;
+      if (o) keyed.set(key, null);
+    } else {
+      let c = ref;
+      while (c && (kept.has(c) || morphKey(c))) c = c.nextSibling;
+      if (c && c.nodeType === w.nodeType && c.nodeName === w.nodeName) o = c;
+    }
+    if (o) {
+      kept.add(o);
+      if (o === ref) ref = ref.nextSibling;
+      else oldP.insertBefore(o, ref);
+      morphNode(o, w, active);
+    } else {
+      kept.add(w);
+      oldP.insertBefore(w, ref);
+    }
+  }
+  for (const k of Array.from(oldP.childNodes)) {
+    if (!kept.has(k)) oldP.removeChild(k);
+  }
+}
+
+// Setzt `html` als Inhalt von `target`, ändert aber nur, was sich unterscheidet.
+function morphInto(target, html, active) {
+  const tpl = document.createElement("template");
+  tpl.innerHTML = html;
+  morphChildren(target, tpl.content, active);
+}
+
+// Der Matter Server meldet ständig neue Werte (zuletzt gesehen, Signal): höchstens alle
+// RENDER_MIN_MS neu zeichnen (das erste Ereignis sofort, das letzte folgt verzögert).
+const RENDER_MIN_MS = 2000;
+
+// Netzwerkkarte: Reihenfolge der Netze, Symbole und Zoom der Zeichnung (Faktor; 1 = Originalgröße)
+const NET_KINDS = ["thread", "wifi", "ethernet"];
+const NET_KIND_ICON = { thread: "mdi:hexagon-multiple-outline", wifi: "mdi:wifi", ethernet: "mdi:ethernet" };
+const NET_ZOOM_MIN = 0.15, NET_ZOOM_MAX = 3, NET_ZOOM_KEY = "matter_manager_net_zoom";
+
 // --- Karte ------------------------------------------------------------------
 
 class MatterManagerCard extends HTMLElement {
@@ -1181,6 +1345,12 @@ class MatterManagerCard extends HTMLElement {
     this._lastSig = null;
     this._popupSig = null;
     this._built = false;
+    this._lastHtml = null;
+    this._lastCss = null;
+    this._lastZoom = null;
+    this._lastRenderAt = 0;
+    this._renderedWithData = false;
+    this._renderTimer = null;
     // Funktionen: umgelegte Schalter, die noch auf die Bestätigung des Geräts warten
     this._fnPending = new Map();
     this._fnFilter = "all";
@@ -1234,6 +1404,8 @@ class MatterManagerCard extends HTMLElement {
     clearTimeout(this._confirmTimer);
     clearTimeout(this._imgTimer);
     clearTimeout(this._fnTimer);
+    clearTimeout(this._renderTimer);
+    this._renderTimer = null;
   }
 
   getCardSize() {
@@ -1445,6 +1617,7 @@ class MatterManagerCard extends HTMLElement {
       true
     );
 
+    this._bindNetZoomGestures(root);
     root.addEventListener("click", (e) => this._onClick(e));
     root.addEventListener("input", (e) => this._onInput(e));
     root.addEventListener("change", (e) => this._onChange(e));
@@ -1454,11 +1627,7 @@ class MatterManagerCard extends HTMLElement {
     // Eingabefeld nicht erkennt. Darum hier stoppen, bevor sie nach außen gelangen.
     const keepTyping = (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
-      const origin = e.composedPath?.()[0] ?? e.target;
-      const tag = origin?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || origin?.isContentEditable) {
-        e.stopPropagation();
-      }
+      if (isTypingTarget(e.composedPath?.()[0] ?? e.target)) e.stopPropagation();
     };
     root.addEventListener("keyup", keepTyping);
     root.addEventListener("keypress", keepTyping);
@@ -1480,6 +1649,18 @@ class MatterManagerCard extends HTMLElement {
   _renderIfChanged() {
     const sig = this._signature();
     if (sig === this._lastSig) return;
+    // Meldungen des Matter Servers kommen im Sekundentakt: höchstens alle RENDER_MIN_MS zeichnen
+    // (das erste Ereignis sofort, das letzte folgt verzögert).
+    const wait = RENDER_MIN_MS - (Date.now() - this._lastRenderAt);
+    if (wait > 0 && this._renderedWithData) {
+      if (!this._renderTimer) {
+        this._renderTimer = setTimeout(() => {
+          this._renderTimer = null;
+          this._renderIfChanged();
+        }, wait);
+      }
+      return;
+    }
     this._lastSig = sig;
     this._render();
   }
@@ -1500,59 +1681,50 @@ class MatterManagerCard extends HTMLElement {
     if (!f) return;
     const el = this.shadowRoot.querySelector(`[data-fk="${CSS.escape(f.fk)}"]`);
     if (!el) return;
-    el.focus();
+    // Hat das Feld den Fokus noch (der Abgleich fasst fokussierte Felder nicht an), nichts tun:
+    // Ein erneutes focus() scrollt je nach Browser das Feld wieder ins Bild, die Liste sprang
+    // dadurch bei jedem Neuzeichnen nach oben. Wurde das Feld ersetzt, den Fokus zurückgeben,
+    // aber ohne Scrollen.
+    if (this.shadowRoot.activeElement !== el) el.focus({ preventScroll: true });
     try {
-      if (f.start !== null && f.start !== undefined) el.setSelectionRange(f.start, f.end);
+      if (f.start !== null && f.start !== undefined && (el.selectionStart !== f.start || el.selectionEnd !== f.end)) {
+        el.setSelectionRange(f.start, f.end);
+      }
     } catch (_e) {
       /* nicht jedes Eingabefeld unterstützt Selektion */
     }
   }
 
-  // Ist gerade das Suchfeld aktiv, liefert diese Methode dessen Filterleiste. Das Suchfeld wird
-  // beim Neuzeichnen NICHT ersetzt: Ein neu erzeugtes Eingabefeld, das per Skript den Fokus
-  // bekommt, schließt auf dem Handy die Tastatur und lässt auf dem Desktop den Fokus los.
-  // Dann würde der nächste Buchstabe (z. B. „e“) bei Home Assistant als Tastenkürzel ankommen.
-  _searchKeeper() {
-    const el = this.shadowRoot.activeElement;
-    if (!el || !el.matches || !el.matches('input[data-fk="search"]')) return null;
-    const bar = el.closest(".filter-bar");
-    return bar && bar.parentNode?.classList?.contains("card-content") ? bar : null;
+  // Scroll-Container oberhalb der Karte (Fenster, Ansicht, Seitenleisten-Panel), auch über
+  // Shadow-DOM-Grenzen hinweg. Wird vor dem Neuzeichnen gemerkt und danach zurückgesetzt, falls
+  // etwas anderes (Browser, Home Assistant) die Position verschoben hat.
+  _scrollSnapshot() {
+    const out = [];
+    try {
+      let node = this;
+      while (node) {
+        if (node.nodeType === 1 && node.scrollTop > 0) out.push({ el: node, top: node.scrollTop, left: node.scrollLeft });
+        node = node.assignedSlot || node.parentNode || node.host || null;
+      }
+      const root = document.scrollingElement;
+      if (root && !out.some((x) => x.el === root) && root.scrollTop > 0) {
+        out.push({ el: root, top: root.scrollTop, left: root.scrollLeft });
+      }
+    } catch (_e) {
+      /* ohne Schutz weiterzeichnen */
+    }
+    return out;
   }
 
-  // Ersetzt alles vor und nach der Filterleiste durch den neuen Stand; die Leiste samt
-  // Suchfeld bleibt als dasselbe Element stehen. Gibt false zurück, wenn das nicht geht.
-  _patchAroundBar(keepBar, html) {
-    const tpl = document.createElement("template");
-    tpl.innerHTML = html;
-    const newCard = tpl.content.firstElementChild;
-    const liveCard = this._contentEl.querySelector("ha-card");
-    const newBar = newCard?.querySelector(".filter-bar");
-    const newContent = newBar?.parentNode;
-    if (
-      !liveCard ||
-      !liveCard.contains(keepBar) ||
-      !newBar?.querySelector('input[data-fk="search"]') ||
-      !newContent?.classList?.contains("card-content")
-    ) {
-      return false;
-    }
-    const header = newCard.getAttribute("header");
-    if (header === null) liveCard.removeAttribute("header");
-    else if (liveCard.getAttribute("header") !== header) liveCard.setAttribute("header", header);
-
-    const liveContent = keepBar.parentNode;
-    while (keepBar.previousSibling) keepBar.previousSibling.remove();
-    while (keepBar.nextSibling) keepBar.nextSibling.remove();
-    let before = true;
-    for (const node of Array.from(newContent.childNodes)) {
-      if (node === newBar) {
-        before = false;
-        continue;
+  _restoreScroll(snapshot) {
+    for (const s of snapshot || []) {
+      try {
+        if (Math.abs(s.el.scrollTop - s.top) > 1) s.el.scrollTop = s.top;
+        if (Math.abs(s.el.scrollLeft - s.left) > 1) s.el.scrollLeft = s.left;
+      } catch (_e) {
+        /* Element nicht mehr vorhanden */
       }
-      if (before) liveContent.insertBefore(node, keepBar);
-      else liveContent.appendChild(node);
     }
-    return true;
   }
 
   // <details> merkt sich seinen Zustand selbst; wir speichern ihn nur, damit
@@ -1569,13 +1741,22 @@ class MatterManagerCard extends HTMLElement {
 
   _render() {
     if (!this._config || !this._built) return;
-    const keepBar = this._searchKeeper();
-    const focus = keepBar ? null : this._captureFocus();
+    const focus = this._captureFocus();
+    const scrollSnap = this._scrollSnapshot();
     const visible = this._visibleTabs();
     if (!visible.includes(this._tab)) this._tab = visible[0];
 
-    this._styleEl.textContent = this._styles();
-    this._contentEl.style.zoom = this._cardZoom();
+    // Stylesheet und Zoom nur bei Änderung setzen (sonst wird das CSS jedes Mal neu geparst)
+    const css = this._styles();
+    if (css !== this._lastCss) {
+      this._styleEl.textContent = css;
+      this._lastCss = css;
+    }
+    const zoom = this._cardZoom();
+    if (zoom !== this._lastZoom) {
+      this._contentEl.style.zoom = zoom;
+      this._lastZoom = zoom;
+    }
 
     const title = String(this._config.title ?? "").trim();
     const headerAttr = this._config.show_title === false || !title ? "" : ` header="${esc(title)}"`;
@@ -1588,15 +1769,17 @@ class MatterManagerCard extends HTMLElement {
         </div>
       </ha-card>`;
 
-    if (keepBar && this._patchAroundBar(keepBar, html)) {
-      this._bindDetails();
-      this._renderPopup();
-      return;
+    this._lastRenderAt = Date.now();
+    this._renderedWithData = Boolean(this._data);
+    // Unverändertes HTML: DOM nicht anfassen. Sonst nur die Unterschiede einarbeiten, damit
+    // Gerätebilder nicht neu geladen werden, nichts flackert und die Scroll-Position bleibt.
+    if (html !== this._lastHtml || !this._contentEl.firstElementChild) {
+      this._lastHtml = html;
+      morphInto(this._contentEl, html, this.shadowRoot.activeElement);
     }
-
-    this._contentEl.innerHTML = html;
     this._bindDetails();
     this._restoreFocus(focus);
+    this._restoreScroll(scrollSnap);
     this._renderPopup();
   }
 
@@ -1680,6 +1863,8 @@ class MatterManagerCard extends HTMLElement {
         return this._renderFabrics();
       case "bindings":
         return this._renderBindings();
+      case "network":
+        return this._renderNetworkTab();
       case "bridge":
         return this._renderBridge();
       default:
@@ -1730,6 +1915,7 @@ class MatterManagerCard extends HTMLElement {
       if (this._filter === "offline") list = list.filter((d) => d.available === false);
       else if (this._filter === "low") list = list.filter((d) => d.battery_state === "low" || d.battery_state === "critical");
       else if (this._filter === "updates") list = list.filter((d) => d.ota.state === "available");
+      else if (this._filter === "thread" || this._filter === "wifi") list = list.filter((d) => !d.bridged && d.network === this._filter);
     }
 
     if (FILTER_TABS.includes(tab)) list = this._applyFilters(list);
@@ -1764,6 +1950,8 @@ class MatterManagerCard extends HTMLElement {
       ${chip("offline", s.offline, this._t("chip_offline"), "var(--mmm-color-error)")}
       ${chip("low", s.low_battery, this._t("chip_low_battery"), "var(--mmm-color-warning)")}
       ${chip("updates", s.updates_available, this._t("chip_updates"), "var(--mmm-color-info)")}
+      ${s.thread ? chip("thread", s.thread, this._t("chip_thread"), "var(--mmm-color-tab-active)") : ""}
+      ${s.wifi ? chip("wifi", s.wifi, this._t("chip_wifi"), "var(--mmm-color-tab-active)") : ""}
     </div>`;
   }
 
@@ -2140,6 +2328,385 @@ class MatterManagerCard extends HTMLElement {
           <div class="hint">${esc(this._t("update_all_hint"))}</div>`;
     }
     return `${tab === "devices" ? this._renderStats() : ""}${toolbar}${this._renderFilterBar(tab)}${this._renderFilterPanel(tab)}${this._renderActiveFilters(tab)}${this._renderRowList(tab, this._devices(tab))}`;
+  }
+
+  // ----------------------------------------------------------------- Netzwerk (seit 1.2.0)
+  _deviceById(id) {
+    return (this._data?.devices || []).find((d) => d.id === String(id)) || null;
+  }
+
+  _renderNetworkTab() {
+    const t = (k, v) => this._t(k, v);
+    const net = this._data?.network || {};
+    const kinds = NET_KINDS.filter((k) => net[k]?.hubs?.length);
+    if (!kinds.length) return `<div class="settings-view nm-view"><div class="hint">${esc(t("nw_none"))}</div></div>`;
+    const sections = kinds.map((k) => this._networkSection(k, net[k]));
+    return `<div class="settings-view nm-view">${this._networkZoomBar()}${sections.join("")}
+      <div class="hint">${esc(t("nw_intro"))}</div></div>`;
+  }
+
+  _networkSection(kind, topo) {
+    const t = (k, v) => this._t(k, v);
+    const summary = t(`nw_summary_${kind}`, { routers: topo.routers, external: topo.external, clients: topo.clients });
+    const body = `${this._networkSvg(kind, topo)}
+      ${topo.external ? `<div class="hint">${esc(t("nw_ext_hint"))}</div>` : ""}
+      ${this._networkLists(kind, topo)}`;
+    return this._accordion(`nw:${kind}`, NET_KIND_ICON[kind], t(`nw_title_${kind}`), body, { meta: summary, open: true });
+  }
+
+  _hubName(h) {
+    const t = (k, v) => this._t(k, v);
+    switch (h.type) {
+      case "external":
+        return t("nw_external", { id: String(h.ext || "").slice(-4).toUpperCase() });
+      case "ap":
+        return h.bssid ? t("nw_ap_named", { id: h.bssid }) : t("nw_ap_unknown");
+      case "lan":
+        return t("nw_lan");
+      default:
+        return h.name || t("nw_router");
+    }
+  }
+
+  _hubSub(h) {
+    const t = (k, v) => this._t(k, v);
+    const n = h.clients.length;
+    const count = n === 1 ? t("nw_cloud_one") : t("nw_cloud", { n });
+    if (h.type === "ap") return [h.channel ? t("nw_channel", { n: h.channel }) : "", count].filter(Boolean).join(" · ");
+    if (h.type === "lan") return count;
+    return `${t(h.type === "leader" ? "nw_leader" : "nw_router")}${n ? ` · ${n}` : ""}`;
+  }
+
+  _hubIcon(h) {
+    if (h.type === "leader") return "mdi:access-point-network";
+    if (h.type === "external") return "mdi:router-network";
+    if (h.type === "ap") return "mdi:wifi";
+    if (h.type === "lan") return "mdi:ethernet";
+    return h.available === false ? "mdi:router-network-wireless" : "mdi:router-wireless";
+  }
+
+  // --- Zoom der Zeichnung: Zoombalken, Knöpfe, Mausrad (Strg) und Zwei-Finger-Geste ---
+  _netZoomValue() {
+    if (this._netZoom === undefined) {
+      let z = 1;
+      try {
+        const stored = parseFloat(window.localStorage.getItem(NET_ZOOM_KEY));
+        if (Number.isFinite(stored)) z = stored;
+      } catch (_e) {
+        /* Speicher nicht verfügbar */
+      }
+      this._netZoom = clamp(z, NET_ZOOM_MIN, NET_ZOOM_MAX);
+    }
+    return this._netZoom;
+  }
+
+  _networkZoomBar() {
+    const t = (k, v) => this._t(k, v);
+    const z = this._netZoomValue();
+    return `<div class="nm-zoom" role="group" aria-label="${esc(t("nw_zoom_label"))}">
+      <button class="btn small" data-act="net_zoom_out" title="${esc(t("nw_zoom_out"))}" aria-label="${esc(t("nw_zoom_out"))}"><ha-icon icon="mdi:magnify-minus-outline"></ha-icon></button>
+      <input type="range" data-nmzoom min="${Math.round(NET_ZOOM_MIN * 100)}" max="${Math.round(NET_ZOOM_MAX * 100)}" step="5" value="${Math.round(z * 100)}" aria-label="${esc(t("nw_zoom_label"))}">
+      <button class="btn small" data-act="net_zoom_in" title="${esc(t("nw_zoom_in"))}" aria-label="${esc(t("nw_zoom_in"))}"><ha-icon icon="mdi:magnify-plus-outline"></ha-icon></button>
+      <span class="nm-zoomval" data-nmzoomval>${Math.round(z * 100)} %</span>
+      <button class="btn small" data-act="net_zoom_fit" title="${esc(t("nw_zoom_fit"))}"><ha-icon icon="mdi:fit-to-page-outline"></ha-icon>${esc(t("nw_zoom_fit"))}</button>
+      <button class="btn small" data-act="net_zoom_reset" title="${esc(t("nw_zoom_reset"))}">100 %</button>
+    </div><div class="hint nm-zoomhint">${esc(t("nw_zoom_hint"))}</div>`;
+  }
+
+  // Zoom setzen, ohne neu zu zeichnen (Bedienung bleibt flüssig). anchorX/anchorY = Bildschirmposition,
+  // die beim Zoomen an derselben Stelle bleiben soll (innerhalb der Zeichnung unter dem Zeiger).
+  _setNetZoom(value, anchorX, anchorY, anchorWrap) {
+    const z = clamp(Number(value) || 1, NET_ZOOM_MIN, NET_ZOOM_MAX);
+    const root = this.shadowRoot;
+    const old = this._netZoomValue();
+    this._netZoom = z;
+    const wrap0 = anchorWrap || root.querySelector(".nm-wrap");
+    let focus = null;
+    if (wrap0) {
+      const rect = wrap0.getBoundingClientRect();
+      const ax = anchorX === undefined ? rect.left + wrap0.clientWidth / 2 : anchorX;
+      const ay = anchorY === undefined ? rect.top + wrap0.clientHeight / 2 : anchorY;
+      focus = {
+        off: ax - rect.left,
+        content: (wrap0.scrollLeft + ax - rect.left) / old,
+        offY: ay - rect.top,
+        contentY: (wrap0.scrollTop + ay - rect.top) / old,
+      };
+    }
+    root.querySelectorAll(".nm-svg").forEach((svg) => {
+      svg.style.width = `${Math.round(svg.viewBox.baseVal.width * z)}px`;
+    });
+    if (wrap0 && focus) {
+      wrap0.scrollLeft = Math.max(0, focus.content * z - focus.off);
+      wrap0.scrollTop = Math.max(0, focus.contentY * z - focus.offY);
+    }
+    const slider = root.querySelector("[data-nmzoom]");
+    if (slider) slider.value = String(Math.round(z * 100));
+    const label = root.querySelector("[data-nmzoomval]");
+    if (label) label.textContent = `${Math.round(z * 100)} %`;
+    try {
+      window.localStorage.setItem(NET_ZOOM_KEY, String(z));
+    } catch (_e) {
+      /* Speicher nicht verfügbar */
+    }
+  }
+
+  _netZoomFit() {
+    const root = this.shadowRoot;
+    const wrap = root.querySelector(".nm-wrap");
+    if (!wrap) return;
+    const widest = Math.max(...Array.from(root.querySelectorAll(".nm-svg")).map((s) => s.viewBox.baseVal.width));
+    if (!(widest > 0)) return;
+    this._setNetZoom((wrap.clientWidth - 6) / widest, wrap.getBoundingClientRect().left, undefined, wrap);
+    root.querySelectorAll(".nm-wrap").forEach((w) => {
+      w.scrollLeft = 0;
+      w.scrollTop = 0;
+    });
+  }
+
+  // Zwei-Finger-Geste (Smartphone), Strg + Mausrad und Ziehen mit der Maus auf der Zeichnung
+  _bindNetZoomGestures(root) {
+    let pinch = null;
+    const dist = (a, b) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    root.addEventListener(
+      "touchstart",
+      (e) => {
+        const wrap = e.target.closest?.(".nm-wrap");
+        if (e.touches.length !== 2 || !wrap) return;
+        pinch = { d0: dist(e.touches[0], e.touches[1]), z0: this._netZoomValue(), wrap };
+      },
+      { passive: true }
+    );
+    root.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!pinch || e.touches.length !== 2) return;
+        e.preventDefault();
+        const d = dist(e.touches[0], e.touches[1]);
+        if (pinch.d0 > 0) {
+          this._setNetZoom(
+            pinch.z0 * (d / pinch.d0),
+            (e.touches[0].clientX + e.touches[1].clientX) / 2,
+            (e.touches[0].clientY + e.touches[1].clientY) / 2,
+            pinch.wrap
+          );
+        }
+      },
+      { passive: false }
+    );
+    const end = (e) => {
+      if (pinch && e.touches.length < 2) pinch = null;
+    };
+    root.addEventListener("touchend", end, { passive: true });
+    root.addEventListener("touchcancel", end, { passive: true });
+    root.addEventListener(
+      "wheel",
+      (e) => {
+        const wrap = e.target.closest?.(".nm-wrap");
+        if (!(e.ctrlKey || e.metaKey) || !wrap) return;
+        e.preventDefault();
+        this._setNetZoom(this._netZoomValue() * (e.deltaY < 0 ? 1.1 : 1 / 1.1), e.clientX, e.clientY, wrap);
+      },
+      { passive: false }
+    );
+
+    // Mit gedrückter linker Maustaste die Zeichnung verschieben (nur Maus; Touch scrollt nativ).
+    // Erst ab 4 px Bewegung gilt es als Ziehen, ein einfacher Klick auf einen Router öffnet weiter
+    // das Popup. Nach dem Ziehen wird der Klick unterdrückt.
+    let drag = null;
+    const endDrag = (e) => {
+      if (!drag || (e && e.pointerId !== undefined && e.pointerId !== drag.id)) return;
+      if (drag.moved) {
+        this._netDragEndedAt = Date.now();
+        drag.wrap.classList.remove("nm-dragging");
+        try {
+          drag.wrap.releasePointerCapture(drag.id);
+        } catch (_e) {
+          /* schon freigegeben */
+        }
+      }
+      drag = null;
+    };
+    root.addEventListener("pointerdown", (e) => {
+      if (e.pointerType !== "mouse" || e.button !== 0) return;
+      const wrap = e.target.closest?.(".nm-wrap");
+      if (!wrap) return;
+      drag = { wrap, id: e.pointerId, x: e.clientX, y: e.clientY, sl: wrap.scrollLeft, st: wrap.scrollTop, moved: false };
+    });
+    root.addEventListener("pointermove", (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      if (e.buttons === 0) return endDrag(e);
+      const dx = e.clientX - drag.x;
+      const dy = e.clientY - drag.y;
+      if (!drag.moved) {
+        if (Math.hypot(dx, dy) < 4) return;
+        drag.moved = true;
+        drag.wrap.classList.add("nm-dragging");
+        try {
+          drag.wrap.setPointerCapture(drag.id);
+        } catch (_e) {
+          /* ohne Pointer-Capture: Ziehen funktioniert weiter, solange die Maus über der Karte bleibt */
+        }
+      }
+      drag.wrap.scrollLeft = drag.sl - dx;
+      drag.wrap.scrollTop = drag.st - dy;
+      e.preventDefault();
+    });
+    root.addEventListener("pointerup", endDrag);
+    root.addEventListener("pointercancel", endDrag);
+    root.addEventListener(
+      "click",
+      (e) => {
+        if (Date.now() - (this._netDragEndedAt || 0) < 80) {
+          e.stopPropagation();
+          e.preventDefault();
+        }
+      },
+      true
+    );
+  }
+
+  // Zeichnung: eine Spalte je Ebene (Wurzel links), Unterbäume untereinander, Geräte als Wolke
+  _networkSvg(kind, topo) {
+    const t = (k, v) => this._t(k, v);
+    const hubs = topo.hubs;
+    const byId = new Map(hubs.map((h) => [h.id, h]));
+    const children = new Map(hubs.map((h) => [h.id, []]));
+    const roots = [];
+    for (const h of hubs) {
+      if (h.parent && h.parent !== h.id && byId.has(h.parent)) children.get(h.parent).push(h);
+      else roots.push(h);
+    }
+    const HUB_W = 196, HUB_H = 52, CL_W = 128, CL_H = 34, GAP = 14, COL = 300, SIDE = 16, LEAF = 16;
+    const hasKids = (h) => children.get(h.id).length > 0;
+    const cloudBelow = (h) => h.clients.length > 0 && hasKids(h);
+    const blockH = (h) => HUB_H + (cloudBelow(h) ? 10 + CL_H : 0) + GAP;
+    const sub = new Map();
+    const measure = (h) => {
+      let kids = 0;
+      for (const k of children.get(h.id)) kids += measure(k);
+      const v = Math.max(blockH(h), kids);
+      sub.set(h.id, v);
+      return v;
+    };
+    let total = 0;
+    for (const r of roots) total += measure(r);
+    const pos = new Map();
+    let maxDepth = 0;
+    let leafCloud = false;
+    const place = (h, top, depth) => {
+      pos.set(h.id, { x: SIDE + HUB_W / 2 + depth * COL, top });
+      maxDepth = Math.max(maxDepth, depth);
+      if (h.clients.length && !hasKids(h)) leafCloud = true;
+      let y = top;
+      for (const k of children.get(h.id)) {
+        place(k, y, depth + 1);
+        y += sub.get(k.id);
+      }
+    };
+    let y0 = 8;
+    for (const r of roots) {
+      place(r, y0, 0);
+      y0 += sub.get(r.id);
+    }
+    const width = SIDE * 2 + HUB_W + maxDepth * COL + (leafCloud ? LEAF + CL_W : 0);
+    const height = Math.max(total, 60) + 16;
+
+    const node = (cx, top, w, h, icon, lines, cls, attrs = "", label = "") => {
+      const textX = w > 130 ? 38 : 28;
+      const avail = w - textX - 6;
+      const ys = lines.length > 1 && lines[1] ? [h / 2 - 3, h / 2 + 13] : [h / 2 + 5];
+      const text = lines
+        .filter((l) => l)
+        .map((line, i) => `<text x="${textX}" y="${ys[i]}" class="${i === 0 ? "nm-t" : "nm-s"}">${esc(String(line).slice(0, Math.floor(avail / (i === 0 ? 7.2 : 5.9))))}</text>`)
+        .join("");
+      const ico = w > 130 ? 24 : 18;
+      return `<g class="nm-node ${cls}${attrs ? " link" : ""}" transform="translate(${cx - w / 2} ${top})"${
+        attrs ? ` role="button" tabindex="0" ${attrs} aria-label="${esc(label)}"` : ""
+      }><title>${esc(label || lines[0] || "")}</title>
+        <rect width="${w}" height="${h}" rx="12"/>
+        <foreignObject x="${w > 130 ? 8 : 6}" y="${(h - ico) / 2}" width="${ico}" height="${ico}"><ha-icon icon="${icon}" xmlns="http://www.w3.org/1999/xhtml"></ha-icon></foreignObject>
+        ${text}</g>`;
+    };
+
+    let edges = "";
+    let nodes = "";
+    for (const h of hubs) {
+      const p = pos.get(h.id);
+      if (!p) continue;
+      const cy = p.top + HUB_H / 2;
+      const name = this._hubName(h);
+      for (const k of children.get(h.id)) {
+        const kp = pos.get(k.id);
+        if (!kp) continue;
+        const ky = kp.top + HUB_H / 2;
+        const x1 = p.x + HUB_W / 2;
+        const x2 = kp.x - HUB_W / 2;
+        const mid = (x1 + x2) / 2;
+        edges += `<path class="nm-edge${k.orphan ? " nm-orphan" : ""}" d="M${x1} ${cy} H ${mid} V ${ky} H ${x2}"/>`;
+        if (k.rssi != null) edges += `<text class="nm-lbl" x="${x2 - 4}" y="${ky - 5}" text-anchor="end">${esc(k.rssi)} dBm</text>`;
+      }
+      if (h.clients.length) {
+        const label = t("nw_show_tip", { name });
+        const title = h.clients.length === 1 ? t("nw_cloud_one") : t("nw_cloud", { n: h.clients.length });
+        if (cloudBelow(h)) {
+          const cTop = p.top + HUB_H + 10;
+          edges += `<path class="nm-edge nm-dash" d="M${p.x} ${p.top + HUB_H} V ${cTop}"/>`;
+          nodes += node(p.x, cTop, CL_W, CL_H, "mdi:devices", [title], "cl", `data-act="net_open" data-net="${esc(h.id)}" data-kind="${kind}"`, label);
+        } else {
+          const cx = p.x + HUB_W / 2 + LEAF + CL_W / 2;
+          edges += `<path class="nm-edge nm-dash" d="M${p.x + HUB_W / 2} ${cy} H ${cx - CL_W / 2}"/>`;
+          nodes += node(cx, cy - CL_H / 2, CL_W, CL_H, "mdi:devices", [title], "cl", `data-act="net_open" data-net="${esc(h.id)}" data-kind="${kind}"`, label);
+        }
+      }
+      const dev = h.device ? this._deviceById(h.device) : null;
+      const attrs = dev ? `data-act="open" data-id="${esc(dev.id)}"` : `data-act="net_open" data-net="${esc(h.id)}" data-kind="${kind}"`;
+      const cls = `${h.type === "leader" || h.type === "ap" || h.type === "lan" ? "coord" : h.type === "external" ? "cl" : "rt"}${h.available === false ? " off" : ""}`;
+      nodes += node(p.x, p.top, HUB_W, HUB_H, this._hubIcon(h), [name, this._hubSub(h)], cls, attrs, t("nw_open_tip", { name }));
+    }
+    const zoom = this._netZoomValue();
+    return `<div class="nm-wrap"><svg class="nm-svg" style="width:${Math.round(width * zoom)}px" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(t("nw_map_label"))}">${edges}${nodes}</svg></div>`;
+  }
+
+  // Listen unter der Zeichnung: je Hub ein Akkordeon mit Verbindungen und Geräten
+  _networkLists(kind, topo) {
+    const t = (k, v) => this._t(k, v);
+    const byId = new Map(topo.hubs.map((h) => [h.id, h]));
+    const pill = (v) => (v == null ? "" : `<span class="pill" style="--c:${this._signalColor(v)}" title="${esc(t("nw_signal"))}">${esc(v)} dBm</span>`);
+    const row = (deviceId, name, right) => {
+      const dev = deviceId ? this._deviceById(deviceId) : null;
+      const dot = dev ? this._statusDot(dev) : "";
+      return `<div class="nm-row${dev ? "" : " plain"}"${dev ? ` role="button" tabindex="0" data-act="open" data-id="${esc(dev.id)}"` : ""}>
+        <span class="row-icon nm-dot">${dot}</span><span class="nm-name">${esc(name)}</span>${right}${dev ? '<ha-icon icon="mdi:chevron-right"></ha-icon>' : ""}</div>`;
+    };
+    const parts = topo.hubs.map((h, idx) => {
+      let body = "";
+      if (h.orphan) body += `<div class="hint warn">${esc(t("nw_orphan"))}</div>`;
+      if (h.neighbors?.length) {
+        body += `<div class="nm-sub">${esc(t("nw_links_routers"))}</div>${h.neighbors
+          .map((n) => {
+            const nb = byId.get(n.id);
+            const rel = `<span class="hint nm-rel">${esc(t(`nw_rel_${n.rel}`))}</span>`;
+            return row(nb?.device, nb ? this._hubName(nb) : n.id, `${rel}${pill(n.rssi)}`);
+          })
+          .join("")}`;
+      }
+      if (h.clients.length) {
+        body += `<div class="nm-sub">${esc(t("nw_end_devices"))} (${h.clients.length})</div>${h.clients
+          .map((c) => row(c.id, c.name, `<span class="hint nm-rel">${esc(t(`nw_role_${c.role}`))}</span>${pill(c.rssi)}`))
+          .join("")}`;
+      }
+      if (!body) body = `<div class="hint">${esc(t("nw_no_links"))}</div>`;
+      const meta = h.clients.length === 1 ? t("nw_cloud_one") : h.clients.length ? t("nw_cloud", { n: h.clients.length }) : "";
+      return this._accordion(`nw:${kind}:${h.id}`, this._hubIcon(h), this._hubName(h), body, { meta, open: idx === 0 && kind === "thread" && topo.hubs.length < 4 });
+    });
+    if (topo.unassigned?.length) {
+      const body = `<div class="hint">${esc(t("nw_unassigned_hint"))}</div>${topo.unassigned
+        .map((c) => row(c.id, c.name, `<span class="hint nm-rel">${esc(t(`nw_role_${c.role}`))}</span>`))
+        .join("")}`;
+      parts.push(this._accordion(`nw:${kind}:_unassigned`, "mdi:help-network-outline", t("nw_unassigned"), body, { meta: String(topo.unassigned.length) }));
+    }
+    return parts.join("");
   }
 
   // ----------------------------------------------------------------- Funktionen (Expose)
@@ -2578,6 +3145,10 @@ class MatterManagerCard extends HTMLElement {
 
   _onInput(e) {
     const t = e.target;
+    if (t?.matches?.("[data-nmzoom]")) {
+      this._setNetZoom(Number(t.value) / 100);
+      return;
+    }
     const key = t?.dataset?.draft;
     if (!key) return;
     this._drafts[key] = t.type === "checkbox" ? t.checked : t.value;
@@ -2631,6 +3202,25 @@ class MatterManagerCard extends HTMLElement {
       case "more":
         this._expanded = true;
         return this._refresh();
+      case "net_zoom_in":
+        return void this._setNetZoom(this._netZoomValue() * 1.2);
+      case "net_zoom_out":
+        return void this._setNetZoom(this._netZoomValue() / 1.2);
+      case "net_zoom_reset":
+        return void this._setNetZoom(1);
+      case "net_zoom_fit":
+        return void this._netZoomFit();
+      case "net_open": {
+        // Wolke oder Router in der Zeichnung: das zugehörige Akkordeon aufklappen und anzeigen
+        const key = `nw:${d.kind}:${d.net}`;
+        this._open[key] = true;
+        this._refresh();
+        requestAnimationFrame(() => {
+          const el = [...this.shadowRoot.querySelectorAll("details[data-k]")].find((x) => x.dataset.k === key);
+          el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        });
+        return;
+      }
       case "fn_filter":
         this._fnFilter = this._fnFilter === d.chip && d.chip !== "all" ? "all" : d.chip;
         this._expanded = false;
@@ -3120,11 +3710,12 @@ const EDITOR_LABELS = {
   show_functions: "Kategorie 'Funktionen' anzeigen",
   show_fabrics: "Kategorie 'Fabrics' anzeigen",
   show_bindings: "Kategorie 'Bindings' anzeigen",
+  show_network: "Kategorie 'Netzwerk' (Netzwerkkarte) anzeigen",
   show_bridge: "Kategorie 'Server' anzeigen",
   default_tab: "Beim Öffnen anzeigen",
   max_rows: "Max. Zeilen je Liste (0 = alle)",
   zoom: "Zoomfaktor der Karte (z. B. für Wandtablets)",
-  show_stats: "Statistik-Chips (Geräte/Offline/Batterie/Updates) anzeigen",
+  show_stats: "Statistik-Chips (Geräte/Offline/Batterie/Updates/Thread/WLAN) anzeigen",
   show_images: "Gerätebilder anzeigen (sonst Symbole)",
   image_base: "Bildquelle (Ordner-URL oder lokaler Pfad, leer = Standard)",
   show_search: "Suchfeld anzeigen",
@@ -3180,6 +3771,7 @@ const EDITOR_SCHEMA = [
       bool("show_functions"),
       bool("show_fabrics"),
       bool("show_bindings"),
+      bool("show_network"),
       bool("show_bridge"),
       {
         name: "default_tab",

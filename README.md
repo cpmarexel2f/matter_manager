@@ -40,7 +40,7 @@ Matter-Geräte verwalten, ohne Home Assistant zu verlassen: Geräte, Batterien, 
 
 ## Funktionsumfang
 
-Die Karte hat sieben Kategorien in einer Symbolleiste (unter ca. 480 px Kartenbreite nur Symbole). Jede Kategorie ist einzeln ein- und ausblendbar.
+Die Karte hat acht Kategorien in einer Symbolleiste (unter ca. 480 px Kartenbreite nur Symbole). Jede Kategorie ist einzeln ein- und ausblendbar.
 
 | Kategorie | Was es kann |
 |---|---|
@@ -50,12 +50,14 @@ Die Karte hat sieben Kategorien in einer Symbolleiste (unter ca. 480 px Kartenbr
 | **Funktionen** | Expose-Funktionen aller Geräte: **Schalter** (Ein/Aus) direkt in der Karte schaltbar, dazu Werte wie Helligkeit, Farbtemperatur, Temperatur, Luftfeuchte, Druck, Beleuchtungsstärke (lx), Präsenz sowie Schloss- und Rollladenstatus (nur lesbar); Filter (Alle / Schaltbar / An); der Schalter bleibt bis zur Rückmeldung des Geräts gesperrt (kein Doppelklick); bei Fehlern oder Offline-Geräten nicht schaltbar |
 | **Fabrics** | Ökosysteme (Apple Home, Google Home, Alexa, …), mit denen die Geräte verbunden sind; Verbindung zu einem fremden Ökosystem lösen |
 | **Bindings** | Übersicht aller Geräte-Verknüpfungen; Lösen; Neu verknüpfen im Geräte-Popup |
+| **Netzwerk** | Netzwerkkarte (neu in 1.2.0): **Thread** (Leader, Router, externe Router wie Border Router, Endgeräte mit Signal in dBm), **WLAN** (nach Access Point) und **Ethernet**, mit Zoom, Ziehen und Verbindungslisten; ein Tipp auf einen Knoten öffnet das Geräte-Popup. Aufgebaut aus den Diagnose-Daten, die der Matter Server ohnehin kennt – es werden keine zusätzlichen Anfragen an Geräte gestellt |
 | **Server** (Zahnrad) | **App-Version** (Integration und Karte, mit farbigem Hinweis bei einer neuen Version), Matter-Server-Status, Gerät hinzufügen (Setup-Code), Fabric-Bezeichnung, Neu verbinden, Ereignisprotokoll, Notification Center (optional) |
 
 **Geräte-Popup** (Tipp auf eine Zeile) mit Akkordeon-Abschnitten: Informationen · Kommentar (bearbeitbar) · Umbenennen (mit Liste der betroffenen HA-Entitäten) · Firmware · Bindings · Funktionen · Entitäten (zum Kopieren in die Zwischenablage, für Automationen und Skripte) · Fabrics (inkl. Freigabe für ein weiteres Ökosystem) · Diagnose (Erreichbarkeit prüfen, neu abfragen) · Entfernen.
 
 Weitere Punkte:
 
+- **Chips Thread und WLAN (neu in 1.2.0):** Zwei weitere Statistik-Chips zeigen, wie viele Geräte über Thread bzw. WLAN laufen, und filtern die Geräteliste mit einem Tipp (der Chip erscheint nur, wenn es solche Geräte gibt).
 - **Matter-Entsprechungen statt Zigbee-Begriffen:** Verfügbarkeit kommt vom Matter Server, die Signalstärke ist ein RSSI-Wert in dBm (WLAN bzw. Thread), Gruppen werden durch Fabrics ersetzt, der „Koordinator“ ist der Matter Server.
 - **Eigener Eintrag in der Seitenleiste (neu in 1.1.1):** Matter Manager erscheint als eigener Eintrag in der Seitenleiste von Home Assistant. Der Name ist frei wählbar (Standard „Matter Manager“) und wird im Dialog **Konfigurieren** geändert; bei mehreren Einträgen lässt sich jeder einzeln benennen. Der Eintrag kann auch ausgeblendet werden.
 - **Geräte hinter Bridges** (z. B. Hue-Bridge) erscheinen eigenständig; Name ändern und Funktionen schalten sind möglich, Firmware, Bindings und Fabrics bleiben gesperrt.
@@ -99,11 +101,12 @@ show_battery: true
 show_updates: true
 show_fabrics: true
 show_bindings: true
+show_network: true             # Kategorie „Netzwerk“ (Netzwerkkarte)
 show_functions: true
 show_images: true             # Gerätebilder (Quelle siehe „Gerätebilder“)
 # image_base: /local/geraete  # eigener Bildordner statt zigbee2mqtt.io
 show_bridge: true             # Kategorie „Server“
-default_tab: devices          # devices | battery | updates | functions | fabrics | bindings | bridge
+default_tab: devices          # devices | battery | updates | functions | fabrics | bindings | network | bridge
 max_rows: 0                   # 0 = alle, sonst „weitere anzeigen“
 zoom: 1
 show_stats: true
@@ -227,7 +230,8 @@ Die Schalter für das Notification Center lassen sich per WebSocket nur als **Ad
 
 ## Bekannte Einschränkungen
 
-- **Version 1.1.1 wurde nur mit simulierten Daten und einem simulierten Matter Server geprüft, nicht an echter Hardware.** Entwickelt wurde gegen die dokumentierte WebSocket-Schnittstelle des python-matter-server.
+- **Version 1.2.0 wurde nur mit simulierten Daten und einem simulierten Matter Server geprüft, nicht an echter Hardware.** Entwickelt wurde gegen die dokumentierte WebSocket-Schnittstelle des python-matter-server.
+- **Netzwerkkarte:** Die Struktur ist eine **Näherung** aus den Nachbartabellen (Thread) bzw. dem Access Point (WLAN), keine exakte Routenanzeige, und wurde nur mit simulierten Daten geprüft – **ungeprüft an echter Hardware**. Router erscheinen am besten Pfad zum Leader. Externe Router (z. B. Border Router von Apple oder Google) siehst Du nur, wenn sie in einer Nachbartabelle stehen. Schlafende Endgeräte ohne Nachbartabelle landen unter „Nicht zugeordnet“. Die Zuordnung eines Geräts zu seiner Thread-Adresse setzt voraus, dass der Matter Server die Hardware-Adresse der Schnittstelle (Allgemeine Diagnose) liefert.
 - **Notification Center:** Die Anbindung ist nur gegen einen simulierten Ereignisbus geprüft, nicht gegen ein echtes Notification Center.
 - **Seitenleiste und Suchfeld:** Das Verhalten des Suchfelds (Fokus bleibt beim Tippen erhalten, keine Home-Assistant-Tastenkürzel) wurde in einem Headless-Chromium geprüft, nicht auf einem Handy und nicht in der Home-Assistant-App. Der Seitenleisten-Eintrag wurde nicht an einem echten Home Assistant geprüft.
 - **Hersteller und Gerätename** stammen aus den Basisdaten des Geräts (Herstellername und Produktname). Beginnt der Produktname mit dem Herstellernamen, wird er abgezogen; fehlt der Hersteller, wird er nur erkannt, wenn ein anderes Gerät denselben Herstellernamen meldet. Ohne diese Angaben erscheint das Gerät unter „Unbekannt“. Die Geräteklasse kommt aus den Gerätetypen der Endpunkte; Geräte mit unbekanntem Typ landen in „Sonstige“. Beides wurde nur mit simulierten Daten geprüft.
@@ -255,6 +259,7 @@ Die Schalter für das Notification Center lassen sich per WebSocket nur als **Ad
 
 | Version | Änderung |
 |---|---|
+| **1.2.0** | Behoben: **Die Geräteliste sprang bei vielen Geräten (getestet mit 97) im Sekundentakt nach oben**, sodass man kein Gerät durch Herunterscrollen auswählen konnte. Ursache: Die Karte zeichnete sich bei jeder Meldung des Matter Servers komplett neu und holte dabei ein zuvor benutztes Auswahlfeld per `focus()` zurück ins Bild. Jetzt gleicht die Karte nur noch Unterschiede ab (wie im Zigbee2MQTT Manager 1.3.1), zeichnet höchstens alle 2 Sekunden und behält Scroll-Position und Fokus. Neu: Kategorie **Netzwerk** mit Netzwerkkarte für Thread, WLAN und Ethernet (Zoom, Ziehen, Verbindungslisten, `show_network`, `color_icon_network`); Statistik-Chips **Thread** und **WLAN** als Filter. Nur mit simulierten Daten und im Headless-Browser geprüft, nicht an echter Hardware |
 | **1.1.1** | Neu: **eigener Eintrag in der Seitenleiste** mit frei wählbarem Namen (Standard „Matter Manager“, bis 40 Zeichen, abschaltbar) im Dialog Konfigurieren; bei mehreren Einträgen gibt es so nicht mehr zwei gleich aussehende Einträge. **Spanisch** (Integration, Karte, README). README mit Flaggen, Screenshots und Link zum Blogbeitrag. Behoben: Im Suchfeld der Geräteübersicht ersetzt die Karte das Eingabefeld beim Tippen nicht mehr – auf dem Handy schließt sich die Tastatur nicht mehr nach jedem Buchstaben, am Desktop behält das Feld den Fokus; dadurch landet der nächste Buchstabe auch nicht mehr bei den Tastenkürzeln von Home Assistant („e“ = Entitäten). Nur mit simulierten Daten und im Headless-Browser geprüft, nicht an echter Hardware |
 | **1.1.0** | Neu: **Kommentare** im Geräte-Popup (bearbeitbar, durchsuchbar, nur für Administratoren änderbar); optionale Anbindung an das **Notification Center** (Schnittstelle „Schema 1“ über den Ereignisbus): Meldungsarten Server nicht erreichbar, Gerät offline, Batterie kritisch/niedrig, Firmware-Update, neues/entferntes Gerät; Hauptschalter und Schalter je Meldungsart in der Karte (Server → Notification Center) und im Dialog Konfigurieren, nach Dringlichkeit sortiert. Behoben: Beim Tippen in Eingabefeldern der Karte (z. B. „e“ im Namensfeld) lösen die Tastenkürzel von Home Assistant, etwa die Entitätssuche, nicht mehr aus. Geändert: Die Geräte-Registry wird ohne `device_registry.devices` abgefragt, das ab Home Assistant 2027.9 entfällt. Nur mit simulierten Daten geprüft, nicht gegen ein echtes Notification Center und nicht an echter Hardware |
 | **1.0.3** | Neu: kleine Gerätebilder (Kandidaten aus der Zigbee2MQTT-Bildbibliothek, abschaltbar, eigener Bildordner möglich), Kategorie **Funktionen** mit schaltbaren Ein/Aus-Schaltern und Messwerten, im Geräte-Popup die Abschnitte Funktionen und Entitäten mit Kopieren in die Zwischenablage. Neue Schlüssel `show_functions`, `show_images`, `image_base`, `device_images`, `color_icon_functions`. Nur mit simulierten Daten und im Headless-Browser geprüft, nicht an echter Hardware |
@@ -271,7 +276,7 @@ JSON-Dateien haben keine Kommentare. Ihre SHA-256-Hashes (über die komplette Da
 | Datei | SHA-256 |
 |---|---|
 | `hacs.json` | `e719b176c5b44ea120e0d895d0719225612e43ab3ca6f462f98793383909ff5a` |
-| `custom_components/matter_manager/manifest.json` | `f5a446c4adb95153a2517d1cee8ca2da878d28a739c4ab723a82c07dc7ca878c` |
+| `custom_components/matter_manager/manifest.json` | `0fa4cc0d36ead960b4b9516a018926e2891cdcefa3035d8f9dd79a397dbf4fd2` |
 | `custom_components/matter_manager/strings.json` | `5b1273162c6c691c41cbbba724f52785b32601475f876836abcf3363e3eabb1c` |
 | `custom_components/matter_manager/icons.json` | `6737652d58ff71ed9df9eecfde362f6a0f62d7b2b7243d985e1f06020e3c9eb5` |
 | `custom_components/matter_manager/translations/de.json` | `5b1273162c6c691c41cbbba724f52785b32601475f876836abcf3363e3eabb1c` |

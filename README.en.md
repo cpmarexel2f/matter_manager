@@ -40,7 +40,7 @@ Manage Matter devices without leaving Home Assistant: devices, batteries, firmwa
 
 ## Features
 
-The card has seven categories in an icon bar (icons only below roughly 480 px card width). Each category can be shown or hidden individually.
+The card has eight categories in an icon bar (icons only below roughly 480 px card width). Each category can be shown or hidden individually.
 
 | Category | What it does |
 |---|---|
@@ -50,12 +50,14 @@ The card has seven categories in an icon bar (icons only below roughly 480 px ca
 | **Functions** | Expose functions of all devices: **switches** (on/off) can be toggled directly in the card, plus values such as brightness, color temperature, temperature, humidity, pressure, illuminance (lx), occupancy, lock and cover state (read-only); filter (All / Switchable / On); a switch stays locked until the device reports back (no double click); not switchable on errors or for offline devices |
 | **Fabrics** | Ecosystems (Apple Home, Google Home, Alexa, …) the devices are connected to; remove the connection to a foreign ecosystem |
 | **Bindings** | Overview of all device links; unbind; re-bind in the device popup |
+| **Network** | Network map (new in 1.2.0): **Thread** (leader, routers, external routers such as border routers, end devices with signal in dBm), **Wi-Fi** (by access point) and **Ethernet**, with zoom, drag and connection lists; tapping a node opens the device popup. Built from the diagnostic data the Matter server already knows – no extra requests are sent to devices |
 | **Server** (gear) | **App version** (integration and card, with a colored notice for a new version), Matter Server status, add device (setup code), fabric label, reconnect, event log, Notification Center (optional) |
 
 **Device popup** (tap a row) with accordion sections: Information · Comment (editable) · Rename (with a list of the affected HA entities) · Firmware · Bindings · Functions · Entities (copy to the clipboard for automations and scripts) · Fabrics (incl. sharing with another ecosystem) · Diagnostics (check reachability, re-interview) · Remove.
 
 More points:
 
+- **Thread and Wi-Fi chips (new in 1.2.0):** Two more statistic chips show how many devices run over Thread or Wi-Fi and filter the device list with one tap (a chip only appears if such devices exist).
 - **Matter equivalents instead of Zigbee terms:** availability comes from the Matter Server, signal strength is an RSSI value in dBm (Wi-Fi or Thread), groups are replaced by fabrics, the “coordinator” is the Matter Server.
 - **Own sidebar entry (new in 1.1.1):** Matter Manager appears as its own entry in the Home Assistant sidebar. The name is freely selectable (default “Matter Manager”) and is changed in the **Configure** dialog; with several entries you can name each one individually. The entry can also be hidden.
 - **Devices behind bridges** (e.g. a Hue bridge) appear on their own; renaming and toggling functions are possible, firmware, bindings and fabrics stay locked.
@@ -99,11 +101,12 @@ show_battery: true
 show_updates: true
 show_fabrics: true
 show_bindings: true
+show_network: true             # category “Network” (network map)
 show_functions: true
 show_images: true             # device images (source: see "Device images")
 # image_base: /local/devices  # own image folder instead of zigbee2mqtt.io
 show_bridge: true             # category "Server"
-default_tab: devices          # devices | battery | updates | functions | fabrics | bindings | bridge
+default_tab: devices          # devices | battery | updates | functions | fabrics | bindings | network | bridge
 max_rows: 0                   # 0 = all, otherwise "show more"
 zoom: 1
 show_stats: true
@@ -227,7 +230,8 @@ The Notification Center switches can only be changed over WebSocket by an **admi
 
 ## Known limitations
 
-- **Version 1.1.1 has only been tested with simulated data and a simulated Matter server, not on real hardware.** It was developed against the documented WebSocket interface of python-matter-server.
+- **Version 1.2.0 has only been tested with simulated data and a simulated Matter server, not on real hardware.** It was developed against the documented WebSocket interface of python-matter-server.
+- **Network map:** The structure is an **approximation** from the neighbour tables (Thread) or the access point (Wi-Fi), not an exact route display, and has only been tested with simulated data – **untested on real hardware**. Routers appear on their best path to the leader. External routers (e.g. border routers from Apple or Google) only show up if they appear in a neighbour table. Sleepy end devices without a neighbour table end up under “Not assigned”. Matching a device to its Thread address requires the Matter server to deliver the interface hardware address (General Diagnostics).
 - **Notification Center:** The connection was only tested against a simulated event bus, not against a real Notification Center.
 - **Sidebar and search field:** The behavior of the search field (focus is kept while typing, no Home Assistant shortcuts) was checked in a headless Chromium, not on a phone and not in the Home Assistant app. The sidebar entry was not tested on a real Home Assistant.
 - **Manufacturer and device name** come from the device's basic data (vendor name and product name). If the product name starts with the manufacturer name, it is removed; if the manufacturer is missing, it is only detected when another device reports the same manufacturer name. Without these values the device appears under “Unknown”. The device class comes from the endpoints' device types; devices with an unknown type land in “Other”. Both were only checked with simulated data.
@@ -255,6 +259,7 @@ The Notification Center switches can only be changed over WebSocket by an **admi
 
 | Version | Change |
 |---|---|
+| **1.2.0** | Fixed: **With many devices (tested with 97) the device list jumped back to the top every second**, so a device could not be picked by scrolling down. Cause: the card redrew itself completely on every message from the Matter server and pulled a previously used select field back into view with `focus()`. The card now only applies differences (as in Zigbee2MQTT Manager 1.3.1), redraws at most every 2 seconds and keeps scroll position and focus. New: category **Network** with a network map for Thread, Wi-Fi and Ethernet (zoom, drag, connection lists, `show_network`, `color_icon_network`); statistic chips **Thread** and **Wi-Fi** as filters. Tested only with simulated data and in a headless browser, not on real hardware |
 | **1.1.1** | New: **own sidebar entry** with a freely selectable name (default “Matter Manager”, up to 40 characters, can be disabled) in the Configure dialog; with several entries you no longer get two identical-looking entries. **Spanish** (integration, card, README). README with flags, screenshots and a link to the blog post. Fixed: in the search field of the device overview the card no longer replaces the input while typing – on a phone the keyboard no longer closes after every letter, on desktop the field keeps its focus; as a result the next letter no longer ends up in the Home Assistant shortcuts (“e” = entities). Only tested with simulated data and in a headless browser, not on real hardware |
 | **1.1.0** | New: **comments** in the device popup (editable, searchable, changeable by administrators only); optional connection to the **Notification Center** (interface “schema 1” over the event bus): message types server unreachable, device offline, battery critical/low, firmware update, new/removed device; main switch and a switch per message type in the card (Server → Notification Center) and in the Configure dialog, sorted by urgency. Fixed: typing in the card’s input fields (e.g. “e” in the name field) no longer triggers Home Assistant keyboard shortcuts such as the entity search. Changed: the device registry is queried without `device_registry.devices`, which is removed in Home Assistant 2027.9. Tested only with simulated data, not against a real Notification Center and not on real hardware |
 | **1.0.3** | New: small device images (candidates from the Zigbee2MQTT image library, can be disabled, own image folder possible), category **Functions** with switchable on/off switches and measured values, device popup sections Functions and Entities with copy to clipboard. New keys `show_functions`, `show_images`, `image_base`, `device_images`, `color_icon_functions`. Tested only with simulated data and in a headless browser, not on real hardware |

@@ -40,7 +40,7 @@ Beheer Matter-apparaten zonder Home Assistant te verlaten: apparaten, batterijen
 
 ## Functies
 
-De kaart heeft zeven categorieën in een pictogrammenbalk (onder ca. 480 px kaartbreedte alleen pictogrammen). Elke categorie kan afzonderlijk worden getoond of verborgen.
+De kaart heeft acht categorieën in een pictogrammenbalk (onder ca. 480 px kaartbreedte alleen pictogrammen). Elke categorie kan afzonderlijk worden getoond of verborgen.
 
 | Categorie | Wat het kan |
 |---|---|
@@ -50,12 +50,14 @@ De kaart heeft zeven categorieën in een pictogrammenbalk (onder ca. 480 px kaar
 | **Functies** | Expose-functies van alle apparaten: **schakelaars** (aan/uit) direct in de kaart te bedienen, plus waarden zoals helderheid, kleurtemperatuur, temperatuur, luchtvochtigheid, druk, verlichtingssterkte (lx), aanwezigheid, slot- en rolluikstatus (alleen-lezen); filter (Alle / Schakelbaar / Aan); een schakelaar blijft vergrendeld tot het apparaat terugmeldt (geen dubbelklik); bij fouten of offline-apparaten niet schakelbaar |
 | **Fabrics** | Ecosystemen (Apple Home, Google Home, Alexa, …) waarmee de apparaten verbonden zijn; verbinding met een extern ecosysteem verbreken |
 | **Bindings** | Overzicht van alle apparaatkoppelingen; loskoppelen; opnieuw koppelen in de apparaatpopup |
+| **Netwerk** | Netwerkkaart (nieuw in 1.2.0): **Thread** (leader, routers, externe routers zoals border routers, eindapparaten met signaal in dBm), **wifi** (per access point) en **Ethernet**, met zoom, slepen en verbindingslijsten; een tik op een knooppunt opent de apparaatpopup. Opgebouwd uit de diagnosegegevens die de Matter Server al kent – er worden geen extra verzoeken aan apparaten gestuurd |
 | **Server** (tandwiel) | **App-versie** (integratie en kaart, met een gekleurde melding bij een nieuwe versie), status van de Matter Server, apparaat toevoegen (setupcode), fabric-naam, opnieuw verbinden, gebeurtenissenlogboek, Notification Center (optioneel) |
 
 **Apparaatpopup** (tik op een rij) met accordeonsecties: Informatie · Opmerking (bewerkbaar) · Hernoemen (met lijst van de betrokken HA-entiteiten) · Firmware · Bindings · Functies · Entiteiten (kopiëren naar het klembord voor automatiseringen en scripts) · Fabrics (incl. delen met een ander ecosysteem) · Diagnose (bereikbaarheid controleren, opnieuw uitlezen) · Verwijderen.
 
 Meer punten:
 
+- **Chips Thread en wifi (nieuw in 1.2.0):** Twee extra statistiekchips tonen hoeveel apparaten via Thread of wifi lopen en filteren de apparatenlijst met één tik (een chip verschijnt alleen als er zulke apparaten zijn).
 - **Matter-equivalenten in plaats van Zigbee-termen:** beschikbaarheid komt van de Matter Server, de signaalsterkte is een RSSI-waarde in dBm (wifi of Thread), groepen worden vervangen door fabrics, de „coördinator” is de Matter Server.
 - **Eigen item in de zijbalk (nieuw in 1.1.1):** Matter Manager verschijnt als eigen item in de zijbalk van Home Assistant. De naam is vrij te kiezen (standaard „Matter Manager”) en wordt gewijzigd in het dialoogvenster **Configureren**; bij meerdere items kun je elk item apart een naam geven. Het item kan ook worden verborgen.
 - **Apparaten achter bridges** (bijv. een Hue-bridge) verschijnen afzonderlijk; hernoemen en functies schakelen is mogelijk, firmware, bindings en fabrics blijven vergrendeld.
@@ -99,11 +101,12 @@ show_battery: true
 show_updates: true
 show_fabrics: true
 show_bindings: true
+show_network: true             # categorie „Netwerk” (netwerkkaart)
 show_functions: true
 show_images: true             # apparaatafbeeldingen (bron: zie „Apparaatafbeeldingen”)
 # image_base: /local/apparaten  # eigen afbeeldingenmap i.p.v. zigbee2mqtt.io
 show_bridge: true             # categorie „Server”
-default_tab: devices          # devices | battery | updates | functions | fabrics | bindings | bridge
+default_tab: devices          # devices | battery | updates | functions | fabrics | bindings | network | bridge
 max_rows: 0                   # 0 = alle, anders „meer tonen”
 zoom: 1
 show_stats: true
@@ -227,7 +230,8 @@ De schakelaars voor het Notification Center kunnen via WebSocket alleen door een
 
 ## Bekende beperkingen
 
-- **Versie 1.1.1 is alleen getest met gesimuleerde gegevens en een gesimuleerde Matter-server, niet op echte hardware.** Ontwikkeld tegen de gedocumenteerde WebSocket-interface van python-matter-server.
+- **Versie 1.2.0 is alleen getest met gesimuleerde gegevens en een gesimuleerde Matter-server, niet op echte hardware.** Ontwikkeld tegen de gedocumenteerde WebSocket-interface van python-matter-server.
+- **Netwerkkaart:** De structuur is een **benadering** uit de buurtabellen (Thread) of het access point (wifi), geen exacte routeweergave, en is alleen met gesimuleerde gegevens getest – **ongetest op echte hardware**. Routers verschijnen op hun beste pad naar de leader. Externe routers (bijv. border routers van Apple of Google) zie je alleen als ze in een buurtabel staan. Slapende eindapparaten zonder buurtabel komen onder „Niet toegewezen”. Het koppelen van een apparaat aan zijn Thread-adres vereist dat de Matter Server het hardwareadres van de interface levert (Algemene diagnose).
 - **Notification Center:** De koppeling is alleen getest met een gesimuleerde eventbus, niet met een echt Notification Center.
 - **Zijbalk en zoekveld:** Het gedrag van het zoekveld (focus blijft behouden tijdens het typen, geen sneltoetsen van Home Assistant) is gecontroleerd in een headless Chromium, niet op een telefoon en niet in de Home Assistant-app. Het zijbalkitem is niet getest op een echte Home Assistant.
 - **Fabrikant en apparaatnaam** komen uit de basisgegevens van het apparaat (fabrikantnaam en productnaam). Begint de productnaam met de fabrikantnaam, dan wordt die eraf gehaald; ontbreekt de fabrikant, dan wordt deze alleen herkend als een ander apparaat dezelfde fabrikantnaam meldt. Zonder deze gegevens verschijnt het apparaat onder „Onbekend”. De apparaatklasse komt uit de apparaattypen van de endpoints; apparaten met een onbekend type komen onder „Overig”. Beide zijn alleen met gesimuleerde gegevens gecontroleerd.
@@ -255,6 +259,7 @@ De schakelaars voor het Notification Center kunnen via WebSocket alleen door een
 
 | Versie | Wijziging |
 |---|---|
+| **1.2.0** | Opgelost: **Bij veel apparaten (getest met 97) sprong de apparatenlijst elke seconde terug naar boven**, zodat je niet door omlaag te scrollen een apparaat kon kiezen. Oorzaak: de kaart tekende zich bij elk bericht van de Matter Server volledig opnieuw en haalde een eerder gebruikt keuzeveld met `focus()` terug in beeld. Nu verwerkt de kaart alleen nog verschillen (zoals in Zigbee2MQTT Manager 1.3.1), tekent hoogstens elke 2 seconden en behoudt scrollpositie en focus. Nieuw: categorie **Netwerk** met netwerkkaart voor Thread, wifi en Ethernet (zoom, slepen, verbindingslijsten, `show_network`, `color_icon_network`); statistiekchips **Thread** en **Wifi** als filter. Alleen getest met gesimuleerde gegevens en in een headless browser, niet op echte hardware |
 | **1.1.1** | Nieuw: **eigen item in de zijbalk** met vrij te kiezen naam (standaard „Matter Manager”, maximaal 40 tekens, uit te schakelen) in het dialoogvenster Configureren; bij meerdere items zijn er zo geen twee gelijk ogende items meer. **Spaans** (integratie, kaart, README). README met vlaggen, schermafbeeldingen en link naar het blogbericht. Opgelost: in het zoekveld van het apparatenoverzicht vervangt de kaart het invoerveld niet meer tijdens het typen – op de telefoon sluit het toetsenbord niet meer na elke letter, op de desktop behoudt het veld de focus; zo komt de volgende letter ook niet meer bij de sneltoetsen van Home Assistant terecht („e” = entiteiten). Alleen getest met gesimuleerde gegevens en in een headless browser, niet op echte hardware |
 | **1.1.0** | Nieuw: **opmerkingen** in de apparaatpopup (bewerkbaar, doorzoekbaar, alleen door beheerders te wijzigen); optionele koppeling met het **Notification Center** (interface “schema 1” via de eventbus): meldingstypen server niet bereikbaar, apparaat offline, batterij kritiek/laag, firmware-update, nieuw/verwijderd apparaat; hoofdschakelaar en schakelaar per meldingstype in de kaart (Server → Notification Center) en in het dialoogvenster Configureren, gesorteerd op urgentie. Opgelost: tijdens het typen in invoervelden van de kaart (bijv. “e” in het naamveld) worden de sneltoetsen van Home Assistant, zoals het zoeken naar entiteiten, niet meer geactiveerd. Gewijzigd: de apparaatregistry wordt opgevraagd zonder `device_registry.devices`, dat vanaf Home Assistant 2027.9 vervalt. Alleen getest met gesimuleerde gegevens, niet met een echt Notification Center en niet op echte hardware |
 | **1.0.3** | Nieuw: kleine apparaatafbeeldingen (kandidaten uit de Zigbee2MQTT-afbeeldingenbibliotheek, uitschakelbaar, eigen afbeeldingenmap mogelijk), categorie **Functies** met schakelbare aan/uit-schakelaars en meetwaarden, in de apparaatpopup de secties Functies en Entiteiten met kopiëren naar het klembord. Nieuwe sleutels `show_functions`, `show_images`, `image_base`, `device_images`, `color_icon_functions`. Alleen met gesimuleerde gegevens en in een headless browser getest, niet op echte hardware |
